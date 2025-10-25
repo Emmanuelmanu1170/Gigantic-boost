@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login | Kwabenamedia</title>
+  <style>
+    body {
+      font-family: Poppins, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .login-box {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 90%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: green;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: darkgreen;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <p id="msg"></p>
+  </div>
+
+  <script type="module">
+    // Firebase configuration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msg = document.getElementById("msg");
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Check if admin
+        if (email === "admin@gmail.com" && password === "Emmaemma11") {
+          localStorage.setItem("adminLoggedIn", "true");
+          window.location.href = "admin_dashboard.html";
+        } else {
+          msg.textContent = "Access denied! Not an admin.";
+          msg.style.color = "red";
+        }
+      } catch (error) {
+        msg.textContent = "Login failed: " + error.message;
+        msg.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>
