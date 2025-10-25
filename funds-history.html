@@ -21,8 +21,6 @@
       background: rgba(0,0,0,0.35);
       z-index: -1;
     }
-
-    /* Sidebar */
     .sidebar {
       background: #003366;
       color: #fff;
@@ -51,7 +49,6 @@
     }
     .sidebar a:hover, .sidebar a.active { background: #0055aa; }
 
-    /* Main */
     .main { flex: 1; padding: 40px; }
 
     .container {
@@ -206,50 +203,53 @@
 
     const tbody = document.querySelector('#fundsTable tbody');
 
-    // ✅ Load user's deposit history from Firebase
+    // ✅ Load user's deposit history (Newest First)
     auth.onAuthStateChanged(user => {
       if (!user) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Please log in to view your funds history.</td></tr>`;
         return;
       }
-      loadFundsHistory(user.uid, user.email);
+      loadFundsHistory(user.uid);
     });
 
-    function loadFundsHistory(uid, email) {
-      db.ref(`deposits/${uid}`).on("value", snapshot => {
-        tbody.innerHTML = "";
-        let count = 0;
+    function loadFundsHistory(uid) {
+      // 🔥 Only load the last 50 deposits to improve speed
+      db.ref(`deposits/${uid}`)
+        .limitToLast(50)
+        .once("value", snapshot => {
+          tbody.innerHTML = "";
+          if (!snapshot.exists()) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No funds history found.</td></tr>`;
+            return;
+          }
 
-        if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No funds history found.</td></tr>`;
-          return;
-        }
+          // Convert snapshot to array and reverse (newest first)
+          const records = [];
+          snapshot.forEach(child => {
+            records.push({ id: child.key, ...child.val() });
+          });
+          records.reverse();
 
-        snapshot.forEach(child => {
-          const d = child.val();
-          const depId = child.key;
-          count++;
-          const date = d.date || new Date().toLocaleString();
-          const status = d.status || "Pending";
-          const statusColor =
-            status === "Approved" ? "Approved" :
-            status === "Rejected" ? "Rejected" : "Pending";
+          records.forEach((d, i) => {
+            const date = d.date || new Date().toLocaleString();
+            const status = d.status || "Pending";
+            const statusColor =
+              status === "Approved" ? "Approved" :
+              status === "Rejected" ? "Rejected" : "Pending";
 
-          tbody.innerHTML += `
-            <tr>
-              <td>${count}</td>
-              <td>${d.method || "-"}</td>
-              <td>$${parseFloat(d.amountUSD || 0).toFixed(2)}</td>
-              <td>${date}</td>
-              <td><span class="status ${statusColor}">${status}</span></td>
-              <td>${depId}</td>
-              <td><button class="btn-action" onclick="deleteDeposit('${uid}','${depId}')">🗑 Delete</button></td>
-            </tr>`;
+            const row = `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${d.method || "-"}</td>
+                <td>$${parseFloat(d.amountUSD || 0).toFixed(2)}</td>
+                <td>${date}</td>
+                <td><span class="status ${statusColor}">${status}</span></td>
+                <td>${d.id}</td>
+                <td><button class="btn-action" onclick="deleteDeposit('${uid}','${d.id}')">🗑 Delete</button></td>
+              </tr>`;
+            tbody.insertAdjacentHTML("beforeend", row);
+          });
         });
-
-        if (count === 0)
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No deposits found.</td></tr>`;
-      });
     }
 
     // ✅ Delete a deposit record
