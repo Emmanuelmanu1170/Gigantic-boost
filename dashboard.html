@@ -1,205 +1,224 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <title>Dashboard - Gigantic Boost</title>  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">  
-  
-  <style>  
-    body {  
-      font-family: 'Poppins', sans-serif;  
-      background: #f4f7fb;  
-      margin: 0;  
-      display: flex;  
-      min-height: 100vh;  
-    }  
-    .sidebar {  
-      background: #003366;  
-      color: white;  
-      width: 240px;  
-      padding: 25px 10px;  
-      display: flex;  
-      flex-direction: column;  
-      align-items: flex-start;  
-      position: fixed;  
-      height: 100vh;  
-    }  
-    .sidebar h2 {  
-      text-align: center;  
-      width: 100%;  
-      font-size: 22px;  
-      margin-bottom: 30px;  
-    }  
-    .sidebar a {  
-      color: #fff;  
-      text-decoration: none;  
-      padding: 12px 15px;  
-      border-radius: 8px;  
-      width: 100%;  
-      margin: 5px 0;  
-      transition: 0.3s;  
-    }  
-    .sidebar a:hover, .sidebar a.active {  
-      background: #0055aa;  
-    }  
-    .main {  
-      margin-left: 240px;  
-      padding: 40px;  
+<!DOCTYPE html>    
+<html lang="en">    
+<head>    
+  <meta charset="UTF-8">    
+  <title>Dashboard - Gigantic Boost</title>    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">    
+    
+  <style>    
+    body {    
+      font-family: 'Poppins', sans-serif;    
+      background: #f4f7fb;    
+      margin: 0;    
+      display: flex;    
+      min-height: 100vh;    
+    }    
+    .sidebar {    
+      background: #003366;    
+      color: white;    
+      width: 240px;    
+      padding: 25px 10px;    
+      display: flex;    
+      flex-direction: column;    
+      align-items: flex-start;    
+      position: fixed;    
+      height: 100vh;    
+    }    
+    .sidebar h2 {    
+      text-align: center;    
+      width: 100%;    
+      font-size: 22px;    
+      margin-bottom: 30px;    
+    }    
+    .sidebar a {    
+      color: #fff;    
+      text-decoration: none;    
+      padding: 12px 15px;    
+      border-radius: 8px;    
+      width: 100%;    
+      margin: 5px 0;    
+      transition: 0.3s;    
+    }    
+    .sidebar a:hover, .sidebar a.active {    
+      background: #0055aa;    
+    }    
+    .main {    
+      margin-left: 240px;    
+      padding: 40px;    
+      flex: 1;    
+      display: flex;    
+      align-items: center;    
+      justify-content: space-between;    
+      flex-wrap: wrap;
+    }    
+    .balance-card {    
+      background: white;    
+      border-radius: 12px;    
+      padding: 25px;    
+      text-align: center;    
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);    
+      max-width: 400px;    
+      margin: 40px auto;    
+    }    
+    .balance-card h1 {    
+      color: #004aad;    
+      margin-bottom: 10px;    
+    }    
+    .balance-card p {    
+      font-size: 22px;    
+      font-weight: 600;    
+    }    
+    button {    
+      margin-top: 20px;    
+      background: #004aad;    
+      color: white;    
+      border: none;    
+      padding: 12px 25px;    
+      border-radius: 8px;    
+      font-size: 16px;    
+      cursor: pointer;    
+      transition: 0.3s;    
+    }    
+    button:hover {    
+      background: #003b88;    
+    }    
+    .logout-btn {    
+      background: #e63946;    
+      width: 100%;    
+      margin-top: auto;    
+    }    
+    .logout-btn:hover {    
+      background: #c82333;    
+    }    
+
+    /* 👩 Animated Image Section */  
+    .image-section {  
       flex: 1;  
       display: flex;  
+      justify-content: center;  
       align-items: center;  
-      justify-content: space-between;  
-    }  
-    .balance-card {  
-      background: white;  
-      border-radius: 12px;  
-      padding: 25px;  
-      text-align: center;  
-      box-shadow: 0 2px 10px rgba(0,0,0,.1);  
-      max-width: 400px;  
-      margin: 40px auto;  
-    }  
-    .balance-card h1 {  
-      color: #004aad;  
-      margin-bottom: 10px;  
-    }  
-    .balance-card p {  
-      font-size: 22px;  
-      font-weight: 600;  
-    }  
-    button {  
-      margin-top: 20px;  
-      background: #004aad;  
-      color: white;  
-      border: none;  
-      padding: 12px 25px;  
-      border-radius: 8px;  
-      font-size: 16px;  
-      cursor: pointer;  
-      transition: 0.3s;  
-    }  
-    button:hover {  
-      background: #003b88;  
-    }  
-    .logout-btn {  
-      background: #e63946;  
-      width: 100%;  
-      margin-top: auto;  
-    }  
-    .logout-btn:hover {  
-      background: #c82333;  
+      gap: 20px;
+      flex-wrap: wrap;
+      animation: fadeIn 2s ease-in-out;
     }  
 
-    /* 👩 Professional Girl Image Styling */
-    .image-section {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .image-section img {
-      width: 85%;
-      max-width: 450px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-    .image-section img:hover {
-      transform: scale(1.03);
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    .image-section img {  
+      width: 240px;  
+      height: 240px;  
+      object-fit: cover;
+      border-radius: 16px;  
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  
+      animation: float 4s ease-in-out infinite;  
+      transition: transform 0.4s ease, box-shadow 0.4s ease;  
+    }  
+    .image-section img:hover {  
+      transform: scale(1.05);  
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);  
+    }  
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
-    @media (max-width: 900px) {
-      .main {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {  
+      .main {  
+        flex-direction: column;  
+        align-items: center;  
+        justify-content: center;  
+      }  
+      .image-section {  
+        margin-top: 20px;  
+      }  
+      .image-section img {
+        width: 80%;
+        height: auto;
       }
-      .image-section {
-        margin-top: 20px;
-      }
-    }
-  </style>  
-</head>  
-<body>  
-  <div class="sidebar">  
-    <h2>Gigantic Boost</h2>  
-    <a href="dashboard.html" class="active">🏠 Dashboard</a>  
-    <a href="balance.html">💳 Balance</a>  
-    <a href="add-funds.html">💰 Add Funds</a>  
-    <a href="funds-history.html">🧾 Funds History</a>  
-    <a href="refunds.html">💸 Refunds</a>  
-    <a href="affiliates.html">🤝 Affiliates</a>  
-    <a href="order.html">🛍️ Order</a>  
-    <a href="api.html">🧠 API</a>  
-    <a href="settings.html">⚙️ Settings</a>  
+    }  
+  </style>    
+</head>    
+<body>    
+  <div class="sidebar">    
+    <h2>Gigantic Boost</h2>    
+    <a href="dashboard.html" class="active">🏠 Dashboard</a>    
+    <a href="balance.html">💳 Balance</a>    
+    <a href="add-funds.html">💰 Add Funds</a>    
+    <a href="funds-history.html">🧾 Funds History</a>    
+    <a href="refunds.html">💸 Refunds</a>    
+    <a href="affiliates.html">🤝 Affiliates</a>    
+    <a href="order.html">🛍️ Order</a>    
+    <a href="api.html">🧠 API</a>    
+    <a href="settings.html">⚙️ Settings</a>    
 
-    <!-- ✅ Logout Button -->
-    <button id="logoutBtn" class="logout-btn">🚪 Logout</button>  
-  </div>  
-  
-  <div class="main">  
-    <div class="balance-card">  
-      <h1>Your Wallet Balance</h1>  
-      <p id="balanceDisplay">$0.00</p>  
-      <button onclick="window.location.href='add-funds.html'">Add Funds</button>  
+    <button id="logoutBtn" class="logout-btn">🚪 Logout</button>    
+  </div>    
+    
+  <div class="main">    
+    <div class="balance-card">    
+      <h1>Your Wallet Balance</h1>    
+      <p id="balanceDisplay">$0.00</p>    
+      <button onclick="window.location.href='add-funds.html'">Add Funds</button>    
+    </div>    
+    
+    <!-- 👩 Animated Girl Images Section -->  
+    <div class="image-section">  
+      <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" alt="Smiling Woman">  
+      <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg" alt="Confident Girl">  
+      <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg" alt="Happy Lady with Laptop"> 
     </div>  
-
-    <!-- 👩 Professional girl image section -->
-    <div class="image-section">
-      <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" alt="Professional Woman Smiling">
-    </div>
-  </div>  
-
-  <!-- ✅ Firebase Integration -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
-      authDomain: "kwabenamedia.firebaseapp.com",
-      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
-      projectId: "kwabenamedia",
-      storageBucket: "kwabenamedia.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // ✅ Display balance
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const balanceRef = ref(db, `users/${user.uid}/balance`);
-        onValue(balanceRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const balance = snapshot.val();
-            document.getElementById("balanceDisplay").textContent = `$${parseFloat(balance).toFixed(2)}`;
-            localStorage.setItem('balanceUSD', balance);
-          } else {
-            document.getElementById("balanceDisplay").textContent = "$0.00";
-          }
-        });
-      } else {
-        window.location.href = "login.html";
-      }
-    });
-
-    // ✅ Logout button
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        localStorage.clear();
-        window.location.href = "index.html";
-      } catch (err) {
-        alert("Error signing out: " + err.message);
-      }
-    });
-  </script>
-</body>  
+  </div>    
+    
+  <!-- ✅ Firebase Integration -->  
+  <script type="module">  
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";  
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";  
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";  
+    
+    const firebaseConfig = {  
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",  
+      authDomain: "kwabenamedia.firebaseapp.com",  
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",  
+      projectId: "kwabenamedia",  
+      storageBucket: "kwabenamedia.appspot.com",  
+      messagingSenderId: "508812066118",  
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947"  
+    };  
+    
+    const app = initializeApp(firebaseConfig);  
+    const auth = getAuth(app);  
+    const db = getDatabase(app);  
+    
+    onAuthStateChanged(auth, (user) => {  
+      if (user) {  
+        const balanceRef = ref(db, `users/${user.uid}/balance`);  
+        onValue(balanceRef, (snapshot) => {  
+          if (snapshot.exists()) {  
+            const balance = snapshot.val();  
+            document.getElementById("balanceDisplay").textContent = `$${parseFloat(balance).toFixed(2)}`;  
+          } else {  
+            document.getElementById("balanceDisplay").textContent = "$0.00";  
+          }  
+        });  
+      } else {  
+        window.location.href = "login.html";  
+      }  
+    });  
+    
+    document.getElementById("logoutBtn").addEventListener("click", async () => {  
+      try {  
+        await signOut(auth);  
+        localStorage.clear();  
+        window.location.href = "index.html";  
+      } catch (err) {  
+        alert("Error signing out: " + err.message);  
+      }  
+    });  
+  </script>  
+</body>    
 </html>
