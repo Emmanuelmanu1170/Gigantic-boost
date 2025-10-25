@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kwabenamedia — Refund Request</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Montserrat',sans-serif;}
+    body{background:#f3f7fc;display:flex;min-height:100vh;}
+
+    .sidebar{
+      background:#003366;color:#fff;width:240px;padding:25px 10px;
+      display:flex;flex-direction:column;align-items:flex-start;
+      position:fixed;height:100%;
+    }
+    .sidebar h2{width:100%;text-align:center;margin-bottom:30px;color:#fff;font-size:22px;font-weight:700;}
+    .sidebar a{color:#fff;text-decoration:none;display:block;width:100%;padding:12px 15px;border-radius:8px;margin:5px 0;transition:background .25s;font-weight:500;}
+    .sidebar a:hover,.sidebar a.active{background:#0055aa;}
+
+    .main{flex:1;padding:40px;margin-left:240px;}
+    .container{background:#fff;border:1px solid #dce3ee;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,.05);max-width:650px;margin:auto;padding:25px;}
+    h2{text-align:center;color:#004aad;margin-bottom:20px;}
+    label{display:block;margin-top:12px;font-weight:600;color:#333;}
+    input, select, textarea{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #cdd5e0;outline:none;font-size:14px;}
+    textarea{resize:none;height:90px;}
+    button{background:#004aad;color:#fff;border:none;width:100%;padding:12px;border-radius:6px;font-size:16px;margin-top:18px;cursor:pointer;transition:background .25s;}
+    button:hover{background:#003b88;}
+
+    @media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;overflow-x:auto;justify-content:space-around;position:relative;height:auto}.main{padding:20px;margin-left:0;}}
+  </style>
+
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+  <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    // ✅ Initialize Firebase Services
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const fs = firebase.firestore();
+    const storage = firebase.storage();
+    const analytics = firebase.analytics();
+  </script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Kwabenamedia</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="order.html">🛒 Place Order</a>
+    <a href="order-history.html">📋 Order History</a>
+    <a href="add-funds.html">💰 Add Funds</a>
+    <a href="funds-history.html">🧾 Funds History</a>
+    <a href="refund.html" class="active">💸 Refund Request</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="container">
+      <h2>Refund Request Form</h2>
+      <label>Order Reference</label>
+      <input type="text" id="orderRef" placeholder="Enter your order reference (e.g. ORD-12345678)" />
+
+      <label>Reason for Refund</label>
+      <select id="reason">
+        <option value="">-- Select Reason --</option>
+        <option>Service not delivered</option>
+        <option>Wrong service delivered</option>
+        <option>Duplicate payment</option>
+        <option>Other</option>
+      </select>
+
+      <label>Additional Details</label>
+      <textarea id="details" placeholder="Describe the issue..."></textarea>
+
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" />
+
+      <label>Phone</label>
+      <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx" />
+
+      <button id="refundBtn">Submit Refund Request</button>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    auth.onAuthStateChanged(user => {
+      if(!user) window.location.href='index.html';
+      else currentUser = user;
+    });
+
+    const refundBtn = document.getElementById('refundBtn');
+    refundBtn.addEventListener('click', async () => {
+      if(!currentUser) return alert('Please login first.');
+
+      const orderRef = document.getElementById('orderRef').value.trim();
+      const reason = document.getElementById('reason').value.trim();
+      const details = document.getElementById('details').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      if(!orderRef || !reason || !email || !phone)
+        return alert('Please fill in all required fields.');
+
+      const refundData = {
+        orderRef, reason, details, email, phone,
+        userId: currentUser.uid,
+        date: new Date().toLocaleString(),
+        status: 'pending'
+      };
+
+      try {
+        // ✅ Save to Realtime DB
+        await db.ref(`refunds/${currentUser.uid}`).push(refundData);
+
+        // ✅ Also store in Firestore for admin tracking
+        await fs.collection("refundRequests").add(refundData);
+
+        // ✅ Track with Analytics
+        analytics.logEvent('refund_request_submitted', { user: currentUser.uid, orderRef });
+
+        // ✅ Notify admin via WhatsApp
+        const message = encodeURIComponent(
+          `💸 *Refund Request*\nOrder Ref: ${orderRef}\nReason: ${reason}\nDetails: ${details}\n📧 Email: ${email}\n📱 Phone: ${phone}`
+        );
+        window.open(`https://wa.me/233554263293?text=${message}`, '_blank');
+        alert('✅ Refund request submitted successfully!');
+        
+        // Reset form
+        document.getElementById('orderRef').value='';
+        document.getElementById('reason').value='';
+        document.getElementById('details').value='';
+        document.getElementById('email').value='';
+        document.getElementById('phone').value='';
+      } catch(err){
+        alert('Error submitting refund: '+err.message);
+      }
+    });
+  </script>
+</body>
+</html>

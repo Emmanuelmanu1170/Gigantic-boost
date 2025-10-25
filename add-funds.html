@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gigantic Boost - Add Funds</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #004aad, #007bff);
+      margin: 0;
+      padding: 0;
+      color: #fff;
+    }
+
+    header {
+      background: #ff6600;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(12px);
+    }
+
+    h2 {
+      text-align: center;
+      color: #ffcc66;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    select option {
+      color: #000;
+    }
+
+    select:focus, input:focus {
+      border: 2px solid #ff6600;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #ff6600;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #e65c00;
+    }
+
+    #usdValue {
+      text-align: center;
+      font-weight: 600;
+      color: #ffcc66;
+      margin-top: -5px;
+      margin-bottom: 15px;
+    }
+
+    #paymentInfo {
+      display: none;
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    #paymentInfo h3 {
+      margin-top: 0;
+      color: #ffcc66;
+    }
+
+    a.whatsapp-btn {
+      display: inline-block;
+      background: #25D366;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    a.whatsapp-btn:hover {
+      background: #20b658;
+    }
+
+    .warning {
+      color: #ffcccc;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <header>💰 Gigantic Boost – Add Funds</header>
+
+  <div class="container">
+    <h2>Add Funds</h2>
+
+    <label for="currency">Select Currency:</label>
+    <select id="currency">
+      <option value="NGN">🇳🇬 Nigerian Naira (₦)</option>
+      <option value="USD" selected>🇺🇸 US Dollar ($)</option>
+      <option value="GHS">🇬🇭 Ghanaian Cedi (₵)</option>
+      <option value="KES">🇰🇪 Kenyan Shilling (KSh)</option>
+      <option value="ZAR">🇿🇦 South African Rand (R)</option>
+      <option value="XAF">🇨🇲 Central African Franc (FCFA)</option>
+    </select>
+
+    <label for="amount">Enter Amount:</label>
+    <input type="number" id="amount" placeholder="Enter any amount" min="1">
+
+    <p id="usdValue">USD Equivalent: $0.00</p>
+
+    <label for="email">Email Address:</label>
+    <input type="email" id="email" placeholder="you@example.com">
+
+    <button id="manualPayBtn">Proceed to Manual Payment</button>
+
+    <div id="paymentInfo">
+      <h3>Manual Payment Details</h3>
+      <p><strong>MoMo:</strong> 0549055308 – Emmanuel Manu</p>
+      <p><strong>Bank Transfer:</strong> Fidelity Bank – 2100377015716 – Emmanuel Manu</p>
+      <p>After payment, send proof of payment to our official WhatsApp:</p>
+      <a id="whatsappLink" target="_blank" class="whatsapp-btn">📲 Message Admin on WhatsApp</a>
+      <p class="warning">⚠️ Always confirm payments only via our official WhatsApp. Never share your PIN or OTP with anyone.</p>
+    </div>
+  </div>
+
+  <footer>© 2025 Gigantic Boost. All Rights Reserved.</footer>
+
+  <!-- ✅ Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // ✅ Updated conversion rates (1 USD = 10.7 GHS)
+    const rates = {
+      "USD": 1,
+      "GHS": 0.09346,  // ✅ Updated rate (1 GHS = 0.09346 USD)
+      "NGN": 0.00065,
+      "KES": 0.0078,
+      "ZAR": 0.055,
+      "XAF": 0.0017
+    };
+
+    const amountInput = document.getElementById('amount');
+    const currencySelect = document.getElementById('currency');
+    const usdValue = document.getElementById('usdValue');
+    const emailInput = document.getElementById('email');
+
+    function updateUSD() {
+      const amount = parseFloat(amountInput.value) || 0;
+      const rate = rates[currencySelect.value] || 1;
+      const usd = amount * rate;
+      usdValue.textContent = `USD Equivalent: $${usd.toFixed(2)}`;
+    }
+
+    amountInput.addEventListener('input', updateUSD);
+    currencySelect.addEventListener('change', updateUSD);
+
+    // ✅ Automatically load logged-in user's email
+    auth.onAuthStateChanged(user => {
+      if (user && user.email) {
+        emailInput.value = user.email;
+      }
+    });
+
+    const payBtn = document.getElementById('manualPayBtn');
+    payBtn.addEventListener('click', async () => {
+      const amount = parseFloat(amountInput.value);
+      const email = emailInput.value.trim();
+      const currency = currencySelect.value;
+      const usd = (amount * (rates[currency] || 1)).toFixed(2);
+
+      if (!amount || !email) {
+        alert("Please enter both amount and email to continue.");
+        return;
+      }
+
+      document.getElementById('paymentInfo').style.display = 'block';
+
+      // ✅ Save to Firebase as user deposit history
+      auth.onAuthStateChanged(async user => {
+        if (!user) {
+          alert("Please log in before adding funds.");
+          return;
+        }
+
+        const ref = db.ref(`deposits/${user.uid}`);
+        const deposit = {
+          email: email,
+          amountUSD: parseFloat(usd),
+          currency: currency,
+          amountOriginal: amount,
+          method: "Manual Payment",
+          date: new Date().toLocaleString(),
+          reference: "DEP-" + Date.now().toString().slice(-8)
+        };
+
+        try {
+          await ref.push(deposit);
+          console.log("Deposit record added successfully!");
+        } catch (err) {
+          console.error("Error saving deposit:", err);
+        }
+      });
+
+      // WhatsApp message to admin
+      const message = `Hello Admin, I want to add funds to my Gigantic Boost account.%0A%0ADetails:%0AEmail: ${email}%0ACurrency: ${currency}%0AAmount: ${amount}%0AUSD Equivalent: $${usd}%0A%0AI have sent the payment. Please confirm.`;
+      document.getElementById('whatsappLink').href = `https://wa.me/233554263293?text=${message}`;
+
+      alert("Manual payment option activated. Follow the instructions below to complete your payment and message the admin.");
+    });
+  </script>
+</body>
+</html>

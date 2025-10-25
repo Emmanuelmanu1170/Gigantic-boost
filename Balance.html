@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kwabenamedia | My Balance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Poppins, sans-serif;
+      background: #f8fff8;
+      text-align: center;
+      padding: 40px;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+    }
+    h2 { color: green; }
+    #balance {
+      font-size: 35px;
+      color: #1a8917;
+      margin: 10px 0;
+    }
+    button {
+      background: green;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #0f6e0f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>My Wallet Balance</h2>
+    <div id="balance">$0.00</div>
+    <button id="refreshBtn">🔄 Refresh</button>
+  </div>
+
+  <!-- ✅ Firebase Integration (Modern SDK) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ✅ Your Firebase Config (Authentic & Active)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.firebasestorage.app",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    // ✅ Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const balanceDisplay = document.getElementById("balance");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    let currentUser = null;
+
+    // ✅ Function: Load user balance from Realtime DB
+    function loadBalance(uid) {
+      const balRef = ref(db, `users/${uid}/balance`);
+      onValue(balRef, (snapshot) => {
+        const bal = parseFloat(snapshot.val()) || 0;
+        balanceDisplay.textContent = `$${bal.toFixed(2)}`;
+      });
+    }
+
+    // ✅ Auth guard: only logged-in users can view balance
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("Please log in to view your balance.");
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+      loadBalance(user.uid);
+    });
+
+    // ✅ Manual refresh
+    refreshBtn.addEventListener("click", () => {
+      if (currentUser) {
+        loadBalance(currentUser.uid);
+      }
+    });
+  </script>
+</body>
+</html>

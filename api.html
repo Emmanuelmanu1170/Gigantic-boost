@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kwabenamedia — API Management</title>
+
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+    body { background: #f4f7fb; display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #fff;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: fixed;
+      height: 100vh;
+    }
+    .sidebar h2 { color: #007bff; margin-bottom: 30px; text-align: center; font-size: 24px; }
+    .sidebar ul { list-style: none; }
+    .sidebar ul li { margin-bottom: 15px; }
+    .sidebar ul li a { text-decoration: none; color: #343a40; padding: 10px 15px; display: block; border-radius: 8px; font-weight: 500; transition: 0.3s; }
+    .sidebar ul li a:hover, .sidebar ul li a.active { background: #007bff; color: #fff; }
+    .logout { background: #dc3545; color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600; text-decoration: none; transition: 0.3s; }
+    .logout:hover { background: #a71d2a; }
+
+    /* Main content */
+    .main { margin-left: 280px; padding: 30px; flex: 1; }
+    h2 { color: #004aad; margin-bottom: 20px; text-align: center; }
+    .container { background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,.05); max-width: 700px; margin: auto; }
+
+    label { display: block; margin-top: 12px; font-weight: 600; color: #333; }
+    input, textarea, select { width: 100%; padding: 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #cdd5e0; outline: none; font-size: 14px; }
+    textarea { resize: none; height: 90px; }
+
+    button { background: #004aad; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; margin-top: 18px; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #003b88; }
+
+    .apikey { background: #f7f9fc; padding: 10px; border-radius: 6px; border: 1px solid #e1e7f0; margin-top: 6px; font-family: monospace; word-break: break-all; }
+
+    footer { text-align: center; padding: 15px; color: #6c757d; font-size: 14px; margin-top: 30px; }
+    @media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;flex-direction:row;overflow-x:auto;justify-content:space-around;position:relative;height:auto}.main{margin-left:0;padding:20px}}
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <h2>Kwabenamedia</h2>
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="order.html">New Order</a></li>
+        <li><a href="order-history.html">Orders</a></li>
+        <li><a href="add-funds.html">Add Funds</a></li>
+        <li><a href="refunds.html">Refunds</a></li>
+        <li><a href="api.html" class="active">API</a></li>
+        <li><a href="affiliates.html">Affiliates</a></li>
+        <li><a href="settings.html">Settings</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <h2>API Management</h2>
+    <div class="container">
+      <label>Your API Key</label>
+      <div class="apikey" id="apiKey">Loading...</div>
+      <button id="generateBtn">Generate New API Key</button>
+
+      <label>API Usage Example</label>
+      <textarea readonly>
+GET https://yourdomain.com/api?key=YOUR_API_KEY&service=SERVICE_NAME&quantity=1000
+      </textarea>
+
+      <label>Notes</label>
+      <textarea readonly>
+- Replace YOUR_API_KEY with your personal API key.
+- Replace SERVICE_NAME with the service you want to order (e.g., TikTok Followers).
+- Quantity is per 1000 units.
+      </textarea>
+    </div>
+    <footer>© 2025 Kwabenamedia | All Rights Reserved.</footer>
+  </div>
+
+  <!-- Firebase (Modern SDK with Auth + Realtime DB) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.firebasestorage.app",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    // ✅ Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const apiKeyDiv = document.getElementById("apiKey");
+    const generateBtn = document.getElementById("generateBtn");
+    let currentUser = null;
+
+    // ✅ Check Authentication
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+      currentUser = user;
+      loadApiKey();
+    });
+
+    // ✅ Load API Key from Realtime Database
+    async function loadApiKey() {
+      const keyRef = ref(db, `apiKeys/${currentUser.uid}`);
+      const snapshot = await get(keyRef);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        apiKeyDiv.textContent = data.key || "No key generated yet";
+      } else {
+        apiKeyDiv.textContent = "No key generated yet";
+      }
+    }
+
+    // ✅ Generate New API Key
+    generateBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        alert("Please login first.");
+        return;
+      }
+
+      const newKey = "API-" + Math.random().toString(36).substr(2, 16).toUpperCase();
+      try {
+        const keyRef = ref(db, `apiKeys/${currentUser.uid}`);
+        await set(keyRef, {
+          key: newKey,
+          date: new Date().toLocaleString()
+        });
+        apiKeyDiv.textContent = newKey;
+        alert("✅ New API key generated successfully!");
+      } catch (err) {
+        alert("Error generating API key: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

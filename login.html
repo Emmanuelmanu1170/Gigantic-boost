@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gigantic Boost Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(120deg, #ff8800cc, #ff5100cc),
+        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') center/cover no-repeat;
+      background-blend-mode: overlay;
+      overflow: hidden;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(255, 130, 0, 0.35);
+      backdrop-filter: blur(18px);
+      padding: 45px 35px;
+      text-align: center;
+      width: 90%;
+      max-width: 380px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      animation: fadeIn 1.2s ease;
+      color: #fff;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(255,255,255,0.5);
+    }
+
+    p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 25px;
+      color: #eee;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 500;
+      margin-top: 12px;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 10px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 15px;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.15);
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      background: rgba(255,255,255,0.28);
+      box-shadow: 0 0 10px rgba(255,255,255,0.4);
+    }
+
+    input::placeholder { color: #f1f1f1; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, #ff9900, #ff5a00);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255,120,0,0.6);
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(255,150,0,0.9);
+    }
+
+    .register-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.5);
+      color: #fff;
+      margin-top: 10px;
+    }
+
+    .register-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .forgot-btn {
+      background: transparent;
+      border: none;
+      color: #ffd27f;
+      font-size: 14px;
+      margin-top: 12px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .error {
+      margin-top: 12px;
+      color: #ff4d4d;
+      font-size: 14px;
+      display: none;
+      background: rgba(255, 0, 0, 0.15);
+      border-radius: 6px;
+      padding: 6px;
+    }
+
+    .caption {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #ffe9b0;
+      opacity: 0.9;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    @media(max-width: 480px) {
+      body {
+        background: linear-gradient(120deg, rgba(255,136,0,0.6), rgba(255,81,0,0.6)),
+          url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') center/cover no-repeat;
+        background-blend-mode: overlay;
+      }
+
+      .login-container {
+        width: 85%;
+        padding: 25px 20px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 20px rgba(255, 130, 0, 0.25);
+      }
+
+      h2 { font-size: 22px; }
+      p { font-size: 13px; }
+      input, button { font-size: 14px; padding: 11px; }
+      .login-btn { box-shadow: 0 0 15px rgba(255,120,0,0.5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Welcome Back 👋</h2>
+    <p>Login to continue to <strong>Gigantic Boost</strong></p>
+    <form id="loginForm">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter your email" required />
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required />
+      <button type="submit" class="login-btn">Login</button>
+      <button type="button" class="register-btn" onclick="window.location.href='register.html'">Create Account</button>
+      <button type="button" class="forgot-btn" id="forgotPasswordBtn">Forgot Password?</button>
+      <div id="error" class="error"></div>
+    </form>
+
+    <div class="caption">
+      (Check your spam mailbox for the verification link if not verified)
+    </div>
+  </div>
+
+  <script>
+    // ✅ Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+    const storage = firebase.storage();
+    const analytics = firebase.analytics();
+
+    const form = document.getElementById("loginForm");
+    const errorDiv = document.getElementById("error");
+    const forgotBtn = document.getElementById("forgotPasswordBtn");
+
+    // ✅ Handle Forgot Password Function
+    forgotBtn.addEventListener("click", async () => {
+      const email = prompt("Please enter your email to reset your password:");
+      if (!email) return;
+
+      try {
+        await auth.sendPasswordResetEmail(email);
+        alert(`✅ Password reset link sent to ${email}. Please check your inbox or spam folder.`);
+      } catch (err) {
+        alert("❌ " + err.message);
+      }
+    });
+
+    // ✅ Login Form Submission
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      // 🔹 Admin Login Shortcut
+      if (email === "admin@gmail.com" && password === "Emmaemma11") {
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("userType", "admin");
+        window.location.href = "admin.html";
+        return;
+      }
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+          await user.sendEmailVerification();
+          auth.signOut();
+          alert("⚠️ Your email is not verified. A new verification email has been sent. Please verify before logging in.");
+          return;
+        }
+
+        db.collection("logins").add({
+          email: user.email,
+          uid: user.uid,
+          time: new Date().toISOString()
+        });
+
+        rtdb.ref("activeUsers/" + user.uid).set({
+          email: user.email,
+          loginTime: new Date().toLocaleString()
+        });
+
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("userType", "user");
+        localStorage.setItem("accountName", email);
+
+        analytics.logEvent("login", { email: user.email });
+        window.location.href = "dashboard.html";
+
+      } catch (error) {
+        errorDiv.style.display = "block";
+        errorDiv.textContent = "❌ " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

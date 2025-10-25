@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>👥 Admin Users – Kwabenamedia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}
+    header{background:#004aad;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+    header h2{margin:0;font-weight:600;}
+    header span{font-size:14px;color:#e0e0e0;}
+    .container{display:flex;}
+    nav{width:230px;background:#003366;color:#fff;min-height:100vh;padding-top:25px;}
+    nav h3{text-align:center;margin-bottom:20px;}
+    nav a{display:block;color:#fff;text-decoration:none;padding:12px 20px;border-left:4px solid transparent;transition:0.3s;font-weight:500;}
+    nav a:hover,nav a.active{background:#0055aa;border-left-color:#fff;}
+    main{flex:1;padding:25px;}
+    h3{color:#004aad;}
+    table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,0.05);border-radius:8px;overflow:hidden;}
+    th,td{border:1px solid #eee;padding:12px;text-align:left;font-size:15px;}
+    th{background:#004aad;color:white;}
+    tr:nth-child(even){background:#f9f9f9;}
+    tr:hover{background:#eef5ff;transition:0.3s;}
+    .btn{padding:8px 12px;border:none;border-radius:6px;color:white;font-weight:600;cursor:pointer;}
+    .copy-btn{background:#28a745;}
+    .copy-btn:hover{background:#218838;}
+    .credit-btn{background:#ffa500;}
+    .credit-btn:hover{background:#e69500;}
+    .view-btn{background:#004aad;}
+    .view-btn:hover{background:#003b88;}
+    .logout{background:#dc3545;}
+    .logout:hover{background:#b52a37;}
+    .search-box{margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+    .search-box input{padding:10px;border-radius:6px;border:1px solid #ccc;min-width:250px;font-size:15px;}
+    @media(max-width:768px){
+      nav{width:100%;display:flex;overflow-x:auto;}
+      nav a{flex:1;text-align:center;font-size:14px;}
+    }
+  </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+  <header>
+    <h2>👥 Admin – Users Management</h2>
+    <span id="datetime"></span>
+  </header>
+
+  <div class="container">
+    <nav>
+      <h3>Kwabenamedia</h3>
+      <a href="admin.html">📊 Overview</a>
+      <a href="admin-users.html" class="active">👥 Users</a>
+      <a href="admin-orders.html">🛒 Orders</a>
+      <a href="admin-deposit.html">💳 Deposits</a>
+      <a href="admin-services.html">⚙️ Services</a>
+      <a href="#" class="logout" onclick="logout()">🚪 Logout</a>
+    </nav>
+
+    <main>
+      <div class="search-box">
+        <h3>Registered Users</h3>
+        <input type="text" id="searchInput" placeholder="🔍 Search by email or UID...">
+      </div>
+
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Email</th>
+            <th>UID</th>
+            <th>Balance ($)</th>
+            <th>Date Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userBody"><tr><td colspan="6" style="text-align:center;">Loading users...</td></tr></tbody>
+      </table>
+    </main>
+  </div>
+
+  <script>
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey:"AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain:"kwabenamedia.firebaseapp.com",
+      databaseURL:"https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId:"kwabenamedia",
+      storageBucket:"kwabenamedia.appspot.com",
+      messagingSenderId:"508812066118",
+      appId:"1:508812066118:web:5bf0b2f7f7844d05b3b947"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db=firebase.database();
+    const auth=firebase.auth();
+
+    const userBody=document.getElementById("userBody");
+    const searchInput=document.getElementById("searchInput");
+
+    let allUsers=[];
+
+    // ✅ Fetch Users
+    db.ref("users").on("value",snap=>{
+      allUsers=[];
+      let count=0;
+      userBody.innerHTML="";
+      snap.forEach(child=>{
+        const val=child.val();
+        const user={
+          uid:child.key,
+          email:val.email||"—",
+          balance:val.balance||0,
+          createdAt:val.createdAt||"—"
+        };
+        allUsers.push(user);
+      });
+      renderUsers(allUsers);
+    });
+
+    // ✅ Render users table
+    function renderUsers(users){
+      userBody.innerHTML="";
+      if(users.length===0){
+        userBody.innerHTML=`<tr><td colspan="6" style="text-align:center;">No users found</td></tr>`;
+        return;
+      }
+      users.forEach((u,i)=>{
+        const row=document.createElement("tr");
+        row.innerHTML=`
+          <td>${i+1}</td>
+          <td>${u.email}</td>
+          <td><span id="uid-${i}" style="font-size:13px;color:#004aad;">${u.uid}</span> 
+              <button class="btn copy-btn" onclick="copyUID('${u.uid}')">📋 Copy</button></td>
+          <td>$${parseFloat(u.balance).toFixed(2)}</td>
+          <td>${u.createdAt}</td>
+          <td>
+            <button class="btn credit-btn" onclick="window.location.href='admin-deposit.html'">💰 Credit</button>
+            <button class="btn view-btn" onclick="viewUser('${u.uid}','${u.email}')">👁 View</button>
+          </td>`;
+        userBody.appendChild(row);
+      });
+    }
+
+    // ✅ Copy UID to clipboard
+    function copyUID(uid){
+      navigator.clipboard.writeText(uid)
+        .then(()=>alert(`✅ UID copied: ${uid}`))
+        .catch(()=>alert("❌ Failed to copy UID."));
+    }
+
+    // ✅ Search functionality
+    searchInput.addEventListener("input",()=>{
+      const query=searchInput.value.toLowerCase();
+      const filtered=allUsers.filter(u=>
+        u.email.toLowerCase().includes(query)||u.uid.toLowerCase().includes(query)
+      );
+      renderUsers(filtered);
+    });
+
+    // ✅ View user details
+    function viewUser(uid,email){
+      alert(`User: ${email}\nUID: ${uid}`);
+    }
+
+    function logout(){auth.signOut();localStorage.clear();window.location.href="login.html";}
+    function updateDateTime(){document.getElementById("datetime").textContent=new Date().toLocaleString();}
+    setInterval(updateDateTime,1000);updateDateTime();
+  </script>
+</body>
+</html>

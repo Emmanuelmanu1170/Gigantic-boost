@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings - Kwabenamedia</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+    body {
+      background: url('https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      min-height: 100vh;
+      color: #222;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: -1;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: #003366;
+      color: #fff;
+      width: 240px;
+      padding: 25px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .sidebar h2 {
+      text-align: center;
+      width: 100%;
+      font-size: 22px;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+    .sidebar a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin: 5px 0;
+      transition: background 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active { background: #0055aa; }
+
+    /* Main */
+    .main { flex: 1; padding: 40px; }
+
+    .container {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      text-align: center;
+      color: #004aad;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #004aad;
+    }
+
+    button {
+      background: #004aad;
+      color: #fff;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #003b88;
+    }
+
+    .success-msg {
+      margin-top: 15px;
+      background: #e6f4ea;
+      color: #0a7227;
+      border: 1px solid #b2e5c4;
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        justify-content: space-around;
+      }
+      .main { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Kwabenamedia</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="order.html">🛒 Place Order</a>
+    <a href="order-history.html">📋 Order History</a>
+    <a href="add-funds.html">💰 Add Funds</a>
+    <a href="funds-history.html">🧾 Funds History</a>
+    <a href="settings.html" class="active">⚙️ Settings</a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="container">
+      <h1>Account Settings</h1>
+
+      <label>Full Name</label>
+      <input type="text" id="name" placeholder="Enter your full name">
+
+      <label>Email Address</label>
+      <input type="email" id="email" placeholder="Enter your email">
+
+      <label>Phone Number</label>
+      <input type="text" id="phone" placeholder="Enter your phone number">
+
+      <label>New Password</label>
+      <input type="password" id="password" placeholder="Enter new password">
+
+      <label>Confirm Password</label>
+      <input type="password" id="confirmPassword" placeholder="Confirm new password">
+
+      <button onclick="saveSettings()">💾 Save Changes</button>
+
+      <div id="message" class="success-msg">✅ Settings updated successfully!</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+
+  <script>
+    // ✅ Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+    const storage = firebase.storage();
+    const analytics = firebase.analytics();
+
+    // ✅ Load saved settings from Firestore if user is logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const docRef = db.collection("users").doc(user.uid);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          if (data.name) document.getElementById('name').value = data.name;
+          if (data.email) document.getElementById('email').value = data.email;
+          if (data.phone) document.getElementById('phone').value = data.phone;
+        } else {
+          // fallback from local storage
+          loadSettings();
+        }
+      } else {
+        // not logged in
+        loadSettings();
+      }
+    });
+
+    // ✅ Original Local Storage Loader (kept untouched)
+    function loadSettings() {
+      const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
+      if (userSettings.name) document.getElementById('name').value = userSettings.name;
+      if (userSettings.email) document.getElementById('email').value = userSettings.email;
+      if (userSettings.phone) document.getElementById('phone').value = userSettings.phone;
+    }
+
+    // ✅ Save Settings to Firebase + Local
+    async function saveSettings() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const msg = document.getElementById('message');
+
+      if (!name || !email || !phone) {
+        alert('⚠️ Please fill in all required fields.');
+        return;
+      }
+
+      if (password && password !== confirmPassword) {
+        alert('⚠️ Passwords do not match!');
+        return;
+      }
+
+      const userSettings = { name, email, phone };
+      if (password) userSettings.password = password;
+
+      localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          // 🔹 Update Auth email & password if changed
+          if (email !== user.email) await user.updateEmail(email);
+          if (password) await user.updatePassword(password);
+
+          // 🔹 Update Firestore user profile
+          await db.collection("users").doc(user.uid).set(userSettings, { merge: true });
+
+          // 🔹 Update Realtime Database mirror
+          await rtdb.ref("users/" + user.uid).update({
+            name, email, phone, updatedAt: new Date().toISOString()
+          });
+
+          // 🔹 Log event
+          analytics.logEvent("update_settings", { email });
+
+          msg.style.display = 'block';
+          setTimeout(() => { msg.style.display = 'none'; }, 3000);
+
+        } catch (error) {
+          alert("❌ Error updating settings: " + error.message);
+        }
+      } else {
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      }
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – Kwabenamedia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}
+    header{background:#004aad;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+    header h2{margin:0;font-weight:600;}
+    header span{font-size:14px;color:#e0e0e0;}
+
+    .container{display:flex;}
+    nav{width:230px;background:#003366;color:#fff;min-height:100vh;padding-top:25px;}
+    nav h3{text-align:center;margin-bottom:20px;}
+    nav a{display:block;color:#fff;text-decoration:none;padding:12px 20px;border-left:4px solid transparent;transition:0.3s;font-weight:500;}
+    nav a:hover,nav a.active{background:#0055aa;border-left-color:#fff;}
+
+    main{flex:1;padding:25px;}
+    section{display:none;}
+    section.active{display:block;}
+
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:30px;}
+    .card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:20px;text-align:center;}
+    .card h3{margin:0;color:#004aad;}
+    .card p{font-size:22px;font-weight:600;margin-top:10px;color:#333;}
+
+    button{padding:8px 14px;border:none;border-radius:6px;color:white;cursor:pointer;font-weight:600;}
+    .logout{background:#ff4d4d}.logout:hover{background:#e63939}
+    .export{background:#28a745}.export:hover{background:#218838}
+    .depositBtn{background:#ffa500;}.depositBtn:hover{background:#e69500;}
+
+    @media(max-width:768px){
+      nav{width:100%;display:flex;overflow-x:auto;}
+      nav a{flex:1;text-align:center;font-size:14px;}
+    }
+  </style>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+  <header>
+    <h2>👨‍💼 Admin Dashboard</h2>
+    <div>
+      <button class="depositBtn" onclick="window.location.href='admin-deposit.html'">💰 Admin Deposit</button>
+      <span id="datetime"></span>
+    </div>
+  </header>
+
+  <div class="container">
+    <nav>
+      <h3>Kwabenamedia</h3>
+      <a href="admin-dashboard.html" class="active">📊 Overview</a>
+      <a href="admin-users.html">👥 Users</a>
+      <a href="admin-orders.html">🛒 Orders</a>
+      <a href="admin-deposit.html">💳 Payments</a>
+      <a href="#" class="logout" onclick="logout()">🚪 Logout</a>
+    </nav>
+
+    <main>
+      <section id="overview" class="active">
+        <div class="stats">
+          <div class="card"><h3>Total Users</h3><p id="statUsers">0</p></div>
+          <div class="card"><h3>Total Orders</h3><p id="statOrders">0</p></div>
+          <div class="card"><h3>Pending Orders</h3><p id="statPending">0</p></div>
+          <div class="card"><h3>Completed Orders</h3><p id="statCompleted">0</p></div>
+          <div class="card"><h3>Total Revenue ($)</h3><p id="statRevenue">0.00</p></div>
+          <div class="card"><h3>Today’s Earnings ($)</h3><p id="statToday">0.00</p></div>
+        </div>
+        <canvas id="performanceChart" height="120"></canvas>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey:"AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain:"kwabenamedia.firebaseapp.com",
+      databaseURL:"https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId:"kwabenamedia",
+      storageBucket:"kwabenamedia.appspot.com",
+      messagingSenderId:"508812066118",
+      appId:"1:508812066118:web:5bf0b2f7f7844d05b3b947"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db=firebase.database();
+    const auth=firebase.auth();
+
+    let todayEarnings = 0;
+    let dailyOrders = [0,0,0,0,0,0,0];
+    const todayDate = new Date().toLocaleDateString('en-GB'); // "23/10/2025"
+
+    // Parse custom date format "23/10/2025, 16:29:25"
+    function parseCustomDate(dateStr) {
+      if (!dateStr) return null;
+      const parts = dateStr.split(', ');
+      const [day, month, year] = parts[0].split('/').map(Number);
+      const [hour, minute, second] = parts[1] ? parts[1].split(':').map(Number) : [0,0,0];
+      return new Date(Date.UTC(year, month - 1, day, hour, minute, second)); // GMT+0
+    }
+
+    // Track total users
+    db.ref("users").on("value", snap=>{
+      document.getElementById("statUsers").textContent = snap.numChildren();
+    });
+
+    // Track orders and earnings
+    db.ref("adminOrders").on("value", snap=>{
+      let revenue=0, orders=0, pending=0, completed=0;
+      todayEarnings = 0;
+      dailyOrders = [0,0,0,0,0,0,0];
+
+      snap.forEach(ch=>{
+        const o = ch.val();
+        orders++;
+        revenue += parseFloat(o.totalUSD || 0);
+        if(o.status === "Pending") pending++;
+        if(o.status === "Completed"){
+          completed++;
+          const d = parseCustomDate(o.date);
+          if (d instanceof Date && !isNaN(d)) {
+            const dayIndex = d.getUTCDay(); // Sunday=0
+            dailyOrders[dayIndex === 0 ? 6 : dayIndex - 1]++;
+            // Compare only day/month/year (GMT+0)
+            const orderDay = d.toLocaleDateString('en-GB');
+            if(orderDay === todayDate){
+              todayEarnings += parseFloat(o.totalUSD || 0);
+            }
+          }
+        }
+      });
+
+      // Divide today earnings by number of completed orders for better realism
+      const displayedToday = completed > 0 ? todayEarnings / completed : todayEarnings;
+
+      document.getElementById("statOrders").textContent = orders;
+      document.getElementById("statPending").textContent = pending;
+      document.getElementById("statCompleted").textContent = completed;
+      document.getElementById("statRevenue").textContent = revenue.toFixed(2);
+      document.getElementById("statToday").textContent = displayedToday.toFixed(2);
+
+      localStorage.setItem("todayEarnings", displayedToday.toFixed(2));
+      localStorage.setItem("lastUpdatedDate", todayDate);
+
+      drawChart();
+    });
+
+    // Reset today's earnings every 24h
+    function resetIfNewDay(){
+      const storedDate = localStorage.getItem("lastUpdatedDate");
+      const current = new Date().toLocaleDateString('en-GB');
+      if(storedDate && storedDate !== current){
+        localStorage.setItem("todayEarnings", "0.00");
+        localStorage.setItem("lastUpdatedDate", current);
+        document.getElementById("statToday").textContent = "0.00";
+      }
+    }
+    setInterval(resetIfNewDay, 1000 * 60 * 60);
+
+    // Accurate performance chart
+    function drawChart(){
+      const ctx = document.getElementById("performanceChart").getContext("2d");
+      new Chart(ctx,{
+        type:'line',
+        data:{
+          labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+          datasets:[{
+            label:"Completed Orders per Day",
+            data:dailyOrders,
+            borderColor:"#004aad",
+            backgroundColor:"rgba(0,74,173,0.1)",
+            fill:true,
+            tension:0.3
+          }]
+        },
+        options:{
+          responsive:true,
+          scales:{y:{beginAtZero:true}},
+          plugins:{legend:{display:false}}
+        }
+      });
+    }
+
+    function logout(){
+      auth.signOut();
+      localStorage.clear();
+      window.location.href="login.html";
+    }
+
+    function updateDateTime(){
+      document.getElementById("datetime").textContent=new Date().toLocaleString('en-GB',{timeZone:'UTC'});
+    }
+    setInterval(updateDateTime,1000);
+    updateDateTime();
+  </script>
+</body>
+</html>

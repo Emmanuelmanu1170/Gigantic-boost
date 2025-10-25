@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gigantic Boost — Your #1 SMM Growth Hub</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/747/747376.png">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      background: url("https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&w=1920") no-repeat center center fixed;
+      background-size: cover;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: -1;
+    }
+
+    header {
+      background: rgba(0, 74, 173, 0.85);
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 32px;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #ffdd00, #ffffff, #00eaff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      animation: floatText 4s ease-in-out infinite;
+    }
+    nav {
+      margin-top: 8px;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+    nav a:hover { color: #ffdd00; }
+
+    .hero {
+      text-align: center;
+      padding: 130px 20px 100px;
+    }
+    .hero h2 {
+      font-size: 42px;
+      font-weight: 700;
+      animation: fadeIn 1.3s ease-in-out;
+    }
+    .hero span {
+      color: #ffdd00;
+    }
+    .hero p {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #e8e8e8;
+      animation: fadeInUp 1.6s ease-in-out;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 25px;
+      margin: 12px 8px;
+      background: linear-gradient(90deg, #ff9100, #ffdd00);
+      color: #000;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(255, 221, 0, 0.4);
+      transition: 0.3s;
+    }
+    .btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 25px rgba(255, 221, 0, 0.7);
+    }
+
+    section {
+      background: rgba(255,255,255,0.12);
+      border-radius: 15px;
+      margin: 40px 10%;
+      padding: 40px 20px;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+    }
+    section h2 {
+      text-align: center;
+      font-size: 30px;
+      margin-bottom: 25px;
+      background: linear-gradient(90deg, #ffdd00, #00eaff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 25px;
+    }
+    .card {
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.3);
+    }
+    .card h3 {
+      color: #ffdd00;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: rgba(0,74,173,0.85);
+      font-size: 14px;
+      box-shadow: 0 -2px 15px rgba(0,0,0,0.4);
+    }
+
+    /* ✅ Contact Admin Button Styling */
+    .contact-btn {
+      display: inline-block;
+      margin-top: 20px;
+      background: linear-gradient(90deg, #25D366, #128C7E);
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .contact-btn:hover {
+      background: #20b658;
+      transform: scale(1.05);
+    }
+
+    /* Animations */
+    @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+    @keyframes fadeInUp { from {opacity: 0; transform: translateY(25px);} to {opacity: 1; transform: translateY(0);} }
+    @keyframes floatText {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0px); }
+    }
+
+    @media (max-width: 768px) {
+      section { margin: 20px 5%; }
+      .hero h2 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gigantic Boost — Your #1 SMM Growth Hub</h1>
+    <nav>
+      <a href="#home">🏠 Home</a>
+      <a href="register.html">📝 Register</a>
+      <a href="login.html">🔑 Login</a>
+      <a href="#about">ℹ️ About</a>
+      <a href="#services">💼 Services</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <h2>🌴 Boost Your <span>Social Media Growth</span> Instantly!</h2>
+    <p>Gigantic Boost is your trusted SMM Panel for TikTok, Instagram, YouTube, and Telegram growth.</p>
+    <a href="register.html" class="btn">📝 Register</a>
+    <a href="login.html" class="btn">🔑 Login</a>
+  </section>
+
+  <section id="about">
+    <h2>What is Gigantic Boost?</h2>
+    <p style="text-align:center; max-width:800px; margin:auto; font-size:16px; color:#fff;">
+      Gigantic Boost is a powerful Social Media Marketing (SMM) Panel designed to help creators,
+      influencers, and businesses grow their presence on popular platforms like TikTok, Instagram,
+      YouTube, and Telegram. With fast delivery, affordable prices, and secure payments, we make it
+      easy to reach your goals in record time!
+    </p>
+  </section>
+
+  <section id="why">
+    <h2>Why Choose Us?</h2>
+    <div class="grid">
+      <div class="card"><h3>⚡ Fast Results</h3><p>Watch your followers, likes, and views grow within minutes after placing an order.</p></div>
+      <div class="card"><h3>💳 Easy Payments</h3><p>Pay using Mobile Money, Paystack, or Bank Transfer — fast and secure.</p></div>
+      <div class="card"><h3>🛡️ Safe & Trusted</h3><p>We prioritize your safety and privacy using verified payment systems and secure servers.</p></div>
+      <div class="card"><h3>🎯 24/7 Support</h3><p>Our expert team is always online to assist you whenever you need help.</p></div>
+    </div>
+  </section>
+
+  <section id="services">
+    <h2>Our Top Services</h2>
+    <div class="grid">
+      <div class="card"><h3>🎵 TikTok Growth</h3><p>Boost followers, likes, and video views to go viral fast!</p></div>
+      <div class="card"><h3>▶️ YouTube Boost</h3><p>Get real subscribers and watch hours to monetize your channel quickly.</p></div>
+      <div class="card"><h3>📸 Instagram Reach</h3><p>Increase your likes, comments, and story views from genuine profiles.</p></div>
+      <div class="card"><h3>💬 Telegram Members</h3><p>Grow your group or channel with active members and reactions.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>💬 Client Testimonials</h2>
+    <p style="text-align:center; font-style:italic; max-width:800px; margin:auto; color:#fff;">
+      “Gigantic Boost helped me reach 10,000 TikTok followers in just a week. Their system is fast,
+      safe, and affordable. Highly recommend!” <br>
+      <span style="color:#ffdd00;">— Ama K., Content Creator 🎥</span>
+    </p>
+
+    <!-- ✅ Contact Admin Button -->
+    <div style="text-align:center;">
+      <a href="https://wa.me/233554263293" target="_blank" class="contact-btn">📞 Contact Admin on WhatsApp</a>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 Gigantic Boost (Powered by Kwabenamedia). All Rights Reserved. 🌴✨
+  </footer>
+
+  <!-- Firebase Analytics -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    getAnalytics(app);
+  </script>
+</body>
+</html>
