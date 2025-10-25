@@ -47,6 +47,9 @@
       margin-left: 240px;  
       padding: 40px;  
       flex: 1;  
+      display: flex;  
+      align-items: center;  
+      justify-content: space-between;  
     }  
     .balance-card {  
       background: white;  
@@ -87,6 +90,36 @@
     .logout-btn:hover {  
       background: #c82333;  
     }  
+
+    /* 👩 Professional Girl Image Styling */
+    .image-section {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .image-section img {
+      width: 85%;
+      max-width: 450px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .image-section img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 900px) {
+      .main {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .image-section {
+        margin-top: 20px;
+      }
+    }
   </style>  
 </head>  
 <body>  
@@ -112,6 +145,11 @@
       <p id="balanceDisplay">$0.00</p>  
       <button onclick="window.location.href='add-funds.html'">Add Funds</button>  
     </div>  
+
+    <!-- 👩 Professional girl image section -->
+    <div class="image-section">
+      <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" alt="Professional Woman Smiling">
+    </div>
   </div>  
 
   <!-- ✅ Firebase Integration -->
