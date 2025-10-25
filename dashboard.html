@@ -103,19 +103,46 @@
       animation: fadeIn 2s ease-in-out;
     }  
 
-    .image-section img {  
-      width: 240px;  
-      height: 240px;  
-      object-fit: cover;
+    .image-box {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation: float 4s ease-in-out infinite;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .image-box img {  
+      width: 100%;  
+      height: 100%;  
+      object-fit: cover;  
       border-radius: 16px;  
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);  
-      animation: float 4s ease-in-out infinite;  
-      transition: transform 0.4s ease, box-shadow 0.4s ease;  
     }  
-    .image-section img:hover {  
+
+    .image-box:hover {  
       transform: scale(1.05);  
       box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);  
     }  
+
+    .caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      padding: 10px;
+      text-shadow: 1px 2px 5px rgba(0,0,0,0.8);
+    }
+
+    .caption span {
+      color: #ffd700;
+    }
 
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -136,7 +163,7 @@
       .image-section {  
         margin-top: 20px;  
       }  
-      .image-section img {
+      .image-box {
         width: 80%;
         height: auto;
       }
@@ -166,11 +193,22 @@
       <button onclick="window.location.href='add-funds.html'">Add Funds</button>    
     </div>    
     
-    <!-- 👩 Animated Girl Images Section -->  
+    <!-- 👩 Animated Girl Images Section with Captions -->  
     <div class="image-section">  
-      <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" alt="Smiling Woman">  
-      <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg" alt="Confident Girl">  
-      <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg" alt="Happy Lady with Laptop"> 
+      <div class="image-box">
+        <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg" alt="Smiling Woman">  
+        <div class="caption">💡 <span>Dream</span> Big, Start Small!</div>
+      </div>
+
+      <div class="image-box">
+        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg" alt="Confident Girl">  
+        <div class="caption">🔥 Stay <span>Focused</span> & Never Quit!</div>
+      </div>
+
+      <div class="image-box">
+        <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg" alt="Happy Lady with Laptop"> 
+        <div class="caption">🚀 Build Your <span>Digital Future</span></div>
+      </div>
     </div>  
   </div>    
     
