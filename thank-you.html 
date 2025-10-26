@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #004aad, #007bff);
+      color: white;
+      text-align: center;
+      padding-top: 100px;
+    }
+    .box {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 400px;
+      margin: auto;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #ff6600;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>✅ Payment Successful!</h1>
+    <p>Thank you for your payment. Your funds will be added shortly.</p>
+    <button onclick="window.location.href='dashboard.html'">Go to Dashboard</button>
+  </div>
+</body>
+</html>
