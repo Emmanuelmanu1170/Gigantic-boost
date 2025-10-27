@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gigantic Boost | Register</title>
 
@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* GLOBAL STYLES */
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
@@ -39,7 +38,6 @@
     }
 
     h2 {
-      text-align: center;
       color: #FFA500;
       margin-bottom: 25px;
       font-weight: 700;
@@ -114,17 +112,9 @@
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
-
-    @media (max-width: 600px) {
-      .register-container {
-        padding: 30px 20px;
-      }
-      h2 {
-        font-size: 22px;
-      }
-    }
   </style>
 </head>
+
 <body>
   <div class="register-container">
     <h2>🚀 Create Your Gigantic Boost Account</h2>
@@ -136,55 +126,52 @@
       <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="login.html">Login here</a></p>
-
-    <div class="caption">
-      (Check your spam mailbox for the verification link after registration)
-    </div>
+    <div class="caption">(Check your spam mailbox for the verification link after registration)</div>
   </div>
 
-  <!-- ✅ Firebase Integration -->
+  <!-- Firebase SDKs -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
       authDomain: "kwabenamedia.firebaseapp.com",
       databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
       projectId: "kwabenamedia",
-      storageBucket: "kwabenamedia.appspot.com",
+      storageBucket: "kwabenamedia.firebasestorage.app",
       messagingSenderId: "508812066118",
       appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
       measurementId: "G-FWT4S09Z9L"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    // 🟢 Register User
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const password = document.getElementById("password").value.trim();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const password = document.getElementById("password").value;
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         await set(ref(db, "users/" + user.uid), {
-          name,
-          email,
-          phone,
-          balance: 0,
-          createdAt: new Date().toISOString()
+          name: name,
+          email: email,
+          phone: phone,
+          uid: user.uid
         });
 
         await sendEmailVerification(user);
-        alert("🎉 Account created successfully! Check your email for verification link.");
+
+        alert("🎉 Registration successful! Verification link sent to your email.");
         window.location.href = "login.html";
       } catch (error) {
         alert("❌ Error: " + error.message);
