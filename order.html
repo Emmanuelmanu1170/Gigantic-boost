@@ -1,230 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kwabenamedia — Place Order</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kwabenamedia | Place Order</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-    body { background: #f3f7fc; display: flex; min-height: 100vh; }
-    .sidebar { background: #003366; color: #fff; width: 240px; padding: 25px 10px; display: flex; flex-direction: column; align-items: flex-start; position: fixed; height: 100%; }
-    .sidebar h2 { width: 100%; text-align: center; margin-bottom: 30px; color: #fff; font-size: 22px; font-weight: 700; }
-    .sidebar a { color: #fff; text-decoration: none; display: block; width: 100%; padding: 12px 15px; border-radius: 8px; margin: 5px 0; transition: background 0.25s; font-weight: 500; }
-    .sidebar a:hover, .sidebar a.active { background: #0055aa; }
-    .main { flex: 1; padding: 40px; margin-left: 240px; }
-    .container { background: #fff; border: 1px solid #dce3ee; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,.05); max-width: 650px; margin: auto; padding: 25px; }
-    h2 { text-align: center; color: #004aad; margin-bottom: 20px; }
-    label { display: block; margin-top: 12px; font-weight: 600; color: #333; }
-    select, input { width: 100%; padding: 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #cdd5e0; outline: none; font-size: 14px; }
-    .price-box { margin-top: 10px; background: #f7f9fc; padding: 12px; border-radius: 6px; border: 1px solid #e1e7f0; }
-    button { background: #004aad; color: #fff; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 16px; margin-top: 18px; cursor: pointer; transition: background 0.25s; }
-    button:hover { background: #003b88; }
-    .balance { font-weight: 700; color: #004aad; }
-    @media(max-width: 768px) {
-      body { flex-direction: column; }
-      .sidebar { width: 100%; flex-direction: row; overflow-x: auto; justify-content: space-around; position: relative; height: auto; }
-      .main { padding: 20px; margin-left: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      color: #222;
+      margin: 0;
+      padding: 0;
     }
-    #refreshBalance {
-      background: #004aad;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
+
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: green;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
       border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-left: 10px;
-      transition: 0.3s;
+      margin-top: 5px;
     }
-    #refreshBalance:hover { background: #003b88; }
+
+    button {
+      background-color: green;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: darkgreen;
+    }
+
+    .price-box {
+      background-color: #f9f9f9;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .price-box p {
+      margin: 6px 0;
+    }
+
+    #refreshBalance {
+      background: #eee;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📦 Place Your Order</h2>
+
+    <label>Platform</label>
+    <select id="platform">
+      <option value="">-- Select Platform --</option>
+      <option value="TikTok">TikTok</option>
+      <option value="Instagram">Instagram</option>
+      <option value="YouTube">YouTube</option>
+      <option value="Facebook">Facebook</option>
+      <option value="Telegram">Telegram</option>
+      <option value="WhatsApp">WhatsApp</option>
+      <option value="LinkedIn">LinkedIn</option>
+    </select>
+
+    <label>Service</label>
+    <select id="service">
+      <option value="">-- Select Service --</option>
+    </select>
+
+    <label>Quantity (Per 1000)</label>
+    <input type="number" id="quantity" value="200" min="200">
+
+    <div class="price-box">
+      <p><strong>Price in USD:</strong> $<span id="priceUSD">0</span></p>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+        <p class="balance">Balance: $<span id="balanceValue">0.00</span></p>
+        <button id="refreshBalance">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <label>Username / Link</label>
+    <input type="text" id="username" placeholder="Enter username or post link">
+
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com">
+
+    <label>Phone</label>
+    <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx">
+
+    <button id="placeBtn">Place Order</button>
+  </div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-  <script>
+    // ✅ Firebase Config (from your Kwabenamedia)
     const firebaseConfig = {
       apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
       authDomain: "kwabenamedia.firebaseapp.com",
       databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
       projectId: "kwabenamedia",
-      storageBucket: "kwabenamedia.firebasestorage.app",
-      messagingSenderId: "508812066118",
-      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
-      measurementId: "G-FWT4S09Z9L"
+      storageBucket: "kwabenamedia.appspot.com",
+      messagingSenderId: "310908427582",
+      appId: "1:310908427582:web:a20b238729b872c3b6a1b2"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-  </script>
-</head>
 
-<body>
-  <div class="sidebar">
-    <h2>Kwabenamedia</h2>
-    <a href="dashboard.html">🏠 Dashboard</a>
-    <a href="order.html" class="active">🛒 Place Order</a>
-    <a href="order-history.html">📋 Order History</a>
-    <a href="add-funds.html">💰 Add Funds</a>
-    <a href="funds-history.html">🧾 Funds History</a>
-    <a href="settings.html">⚙️ Settings</a>
-  </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
 
-  <div class="main">
-    <div class="container">
-      <h2>Place Your Order</h2>
+    const platformSelect = document.getElementById('platform');
+    const serviceSelect = document.getElementById('service');
+    const quantityInput = document.getElementById('quantity');
+    const priceUSDSpan = document.getElementById('priceUSD');
+    const placeBtn = document.getElementById('placeBtn');
 
-      <label>Platform</label>
-      <select id="platform">
-        <option value="">-- Select Platform --</option>
-      </select>
-
-      <label>Service</label>
-      <select id="service"><option value="">-- Select Service --</option></select>
-
-      <label>Quantity (Per 1000)</label>
-      <input type="number" id="quantity" value="200" min="200">
-
-      <div class="price-box">
-        <p><strong>Price in USD:</strong> $<span id="priceUSD">0</span></p>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-          <p class="balance">Balance: $<span id="balanceValue">0.00</span></p>
-          <button id="refreshBalance">🔄 Refresh</button>
-        </div>
-      </div>
-
-      <label>Username / Link</label>
-      <input type="text" id="username" placeholder="Enter username or post link">
-
-      <label>Email</label>
-      <input type="email" id="email" placeholder="you@example.com">
-
-      <label>Phone</label>
-      <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx">
-
-      <button id="placeBtn">Place Order</button>
-    </div>
-  </div>
-
-  <script>
+    // Prices per 1000 units (USD)
     const prices = {
-      TikTok: { "Followers (Refill 20 Days) (ID 18236)": 3.7, "Followers Non Drop (ID 10135)": 5.7 },
-      Instagram: { "Followers Real Accounts (ID 27270)": 7 },
-      YouTube: { "Subscribers Lifetime Guaranteed (ID 18274)": 65 },
-      Telegram: { "Members Non Drop (ID 15521)": 4 },
-      Facebook: { "Likes (ID 10036)": 3 },
-      WhatsApp: { "Channel Members (ID 18706)": 13 },
-      LinkedIn: { "AI Growth (ID 20944)": 100 }
+      TikTok: { Followers: 3, Likes: 3, Views: 2 },
+      Instagram: { Followers: 4, Likes: 2, Views: 3 },
+      YouTube: { Views: 4, Likes: 2.5, Subscribers: 5 },
+      Facebook: { Followers: 3, Likes: 3, Views: 2 },
+      Telegram: { Members: 4, Reactions: 2, Views: 4 },
+      WhatsApp: { "Channel Members": 10 },
+      LinkedIn: { "AI Growth": 35 }
     };
 
-    const platformSelect = document.getElementById("platform");
-    const serviceSelect = document.getElementById("service");
-    const quantityInput = document.getElementById("quantity");
-    const priceUSD = document.getElementById("priceUSD");
-    const balanceValue = document.getElementById("balanceValue");
-    const refreshBtn = document.getElementById("refreshBalance");
-    const placeBtn = document.getElementById("placeBtn");
-
-    Object.keys(prices).forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      platformSelect.appendChild(opt);
-    });
-
-    platformSelect.addEventListener("change", () => {
+    // Auto load services based on selected platform
+    platformSelect.addEventListener('change', () => {
       serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
-      const list = prices[platformSelect.value];
-      if (list) Object.keys(list).forEach(s => {
-        const opt = document.createElement("option");
-        opt.value = s;
-        opt.textContent = s;
-        serviceSelect.appendChild(opt);
-      });
-      updatePrice();
+      const platform = platformSelect.value;
+      if (platform && prices[platform]) {
+        Object.keys(prices[platform]).forEach(service => {
+          const opt = document.createElement('option');
+          opt.value = service;
+          opt.textContent = service;
+          serviceSelect.appendChild(opt);
+        });
+      }
+      priceUSDSpan.textContent = '0';
     });
+
+    // Calculate price dynamically
+    serviceSelect.addEventListener('change', updatePrice);
+    quantityInput.addEventListener('input', updatePrice);
 
     function updatePrice() {
-      const p = platformSelect.value;
-      const s = serviceSelect.value;
-      const q = parseInt(quantityInput.value) || 0;
-      if (p && s && q > 0) {
-        const usd = prices[p][s];
-        priceUSD.textContent = (usd * q / 1000).toFixed(2);
-      } else priceUSD.textContent = "0";
-    }
-
-    serviceSelect.addEventListener("change", updatePrice);
-    quantityInput.addEventListener("input", updatePrice);
-
-    let currentUser = null;
-    auth.onAuthStateChanged(user => {
-      if (!user) return (window.location.href = "index.html");
-      currentUser = user;
-      const balRef = db.ref(`users/${user.uid}/balance`);
-      balRef.on("value", snap => {
-        const val = parseFloat(snap.val()) || 0;
-        balanceValue.textContent = val.toFixed(2);
-      });
-    });
-
-    refreshBtn.addEventListener("click", async () => {
-      if (!currentUser) return alert("Please login again.");
-      const snap = await db.ref(`users/${currentUser.uid}/balance`).once("value");
-      const val = parseFloat(snap.val()) || 0;
-      balanceValue.textContent = val.toFixed(2);
-      alert("🔁 Balance refreshed successfully!");
-    });
-
-    placeBtn.addEventListener("click", async () => {
-      if (!currentUser) return alert("Please login again.");
-
       const platform = platformSelect.value;
       const service = serviceSelect.value;
-      const qty = parseInt(quantityInput.value);
-      const price = parseFloat(priceUSD.textContent);
-      const username = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+      const quantity = parseInt(quantityInput.value) || 0;
+      if (platform && service && prices[platform] && prices[platform][service]) {
+        const unitPrice = prices[platform][service];
+        const total = (quantity / 1000) * unitPrice;
+        priceUSDSpan.textContent = total.toFixed(2);
+      } else {
+        priceUSDSpan.textContent = '0';
+      }
+    }
 
-      if (!platform || !service || qty < 200 || !username || !email || !phone)
-        return alert("⚠️ Please fill all fields. Minimum order is 200 units.");
+    // ✅ Save order to admin dashboard
+    placeBtn.addEventListener('click', async () => {
+      const platform = platformSelect.value.trim();
+      const service = serviceSelect.value.trim();
+      const quantity = quantityInput.value.trim();
+      const priceUSD = priceUSDSpan.textContent.trim();
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
 
-      const balanceRef = db.ref(`users/${currentUser.uid}/balance`);
-      const balSnap = await balanceRef.once("value");
-      const currentBalance = parseFloat(balSnap.val()) || 0;
+      if (!platform || !service || !quantity || !username || !email || !phone) {
+        alert("Please fill all fields before placing an order.");
+        return;
+      }
 
-      if (currentBalance < price) return alert("❌ Insufficient balance!");
-
-      const reference = "ORD-" + Date.now().toString().slice(-8);
-      const orderObj = {
-        uid: currentUser.uid,
+      const orderData = {
         platform,
         service,
-        quantity: qty,
-        totalUSD: price.toFixed(2),
+        quantity,
+        priceUSD,
         username,
         email,
         phone,
-        reference,
-        date: new Date().toLocaleString(),
-        status: "Pending"
+        status: "Pending",
+        timestamp: new Date().toLocaleString()
       };
 
       try {
-        await balanceRef.set(currentBalance - price);
-        await db.ref(`orders/${currentUser.uid}/${reference}`).set(orderObj);
-        await db.ref(`adminOrders/${reference}`).set(orderObj);
-
-        alert("✅ Order placed successfully!");
-        window.location.href = "admin-order.html"; // ✅ sends details to admin page
-      } catch (e) {
-        alert("Error: " + e.message);
+        const orderRef = ref(db, "admin-orders");
+        await push(orderRef, orderData);
+        alert("✅ Order placed successfully! Admin will review shortly.");
+        // Reset form
+        platformSelect.value = "";
+        serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
+        quantityInput.value = "200";
+        document.getElementById('username').value = "";
+        document.getElementById('email').value = "";
+        document.getElementById('phone').value = "";
+        priceUSDSpan.textContent = "0";
+      } catch (error) {
+        alert("❌ Failed to place order. Try again.");
+        console.error(error);
       }
     });
   </script>
