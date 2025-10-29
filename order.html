@@ -112,49 +112,14 @@
   </div>
 
   <script>
-    // ✅ Full updated services + pricing
     const prices = {
-      TikTok: {
-        "Followers (Refill 20 Days) (ID 18236)": 3.7,
-        "Followers Non Drop (ID 10135)": 5.7,
-        "Likes (Refill 20 Days) (ID 13088)": 0.9,
-        "Likes Non Drop | Super Instant (ID 4949)": 2,
-        "Views (ID 17776)": 0.9,
-        "Views Super Instant (ID 11183)": 1.1,
-        "Shares (ID 11105)": 1
-      },
-      Instagram: {
-        "Followers Real Accounts (ID 27270)": 7,
-        "Likes Non Drop (ID 27295)": 1,
-        "Views Non Drop (ID 11184)": 1.5
-      },
-      YouTube: {
-        "Views Non Drop (ID 24978)": 4.8,
-        "Likes Lifetime Guaranteed (ID 1865)": 2,
-        "Subscribers Lifetime Guaranteed (ID 18274)": 65
-      },
-      Telegram: {
-        "Members Non Drop (ID 15521)": 4,
-        "Reactions (ID 19003)": 2,
-        "Views (ID 15982)": 3
-      },
-      Facebook: {
-        "Followers Lifetime Guaranteed (ID 22328)": 4,
-        "Likes Instant | Non Drop | Lifetime Guaranteed (ID 10372)": 8,
-        "Likes (ID 10036)": 3,
-        "Views Monetizable (ID 16611)": 2
-      },
-      WhatsApp: {
-        "Channel Members (ID 18706)": 13
-      },
-      LinkedIn: {
-        "AI Growth (ID 20944)": 100
-      },
-      Twitter: {
-        "Followers Non Drop (ID 16269)": 20,
-        "Views (ID 3775)": 1,
-        "Likes (ID 10864)": 1.2
-      }
+      TikTok: { "Followers (Refill 20 Days) (ID 18236)": 3.7, "Followers Non Drop (ID 10135)": 5.7 },
+      Instagram: { "Followers Real Accounts (ID 27270)": 7 },
+      YouTube: { "Subscribers Lifetime Guaranteed (ID 18274)": 65 },
+      Telegram: { "Members Non Drop (ID 15521)": 4 },
+      Facebook: { "Likes (ID 10036)": 3 },
+      WhatsApp: { "Channel Members (ID 18706)": 13 },
+      LinkedIn: { "AI Growth (ID 20944)": 100 }
     };
 
     const platformSelect = document.getElementById("platform");
@@ -198,11 +163,10 @@
     quantityInput.addEventListener("input", updatePrice);
 
     let currentUser = null;
-    let balRef = null;
     auth.onAuthStateChanged(user => {
       if (!user) return (window.location.href = "index.html");
       currentUser = user;
-      balRef = db.ref(`users/${user.uid}/balance`);
+      const balRef = db.ref(`users/${user.uid}/balance`);
       balRef.on("value", snap => {
         const val = parseFloat(snap.val()) || 0;
         balanceValue.textContent = val.toFixed(2);
@@ -217,10 +181,9 @@
       alert("🔁 Balance refreshed successfully!");
     });
 
-    const ADMIN_WA = "233554263293";
-
     placeBtn.addEventListener("click", async () => {
       if (!currentUser) return alert("Please login again.");
+
       const platform = platformSelect.value;
       const service = serviceSelect.value;
       const qty = parseInt(quantityInput.value);
@@ -232,13 +195,11 @@
       if (!platform || !service || qty < 200 || !username || !email || !phone)
         return alert("⚠️ Please fill all fields. Minimum order is 200 units.");
 
-      const totalUSD = price;
       const balanceRef = db.ref(`users/${currentUser.uid}/balance`);
       const balSnap = await balanceRef.once("value");
       const currentBalance = parseFloat(balSnap.val()) || 0;
 
-      if (currentBalance < totalUSD)
-        return alert("❌ Insufficient balance! Please add funds.");
+      if (currentBalance < price) return alert("❌ Insufficient balance!");
 
       const reference = "ORD-" + Date.now().toString().slice(-8);
       const orderObj = {
@@ -246,8 +207,7 @@
         platform,
         service,
         quantity: qty,
-        priceUSD: price.toFixed(2),
-        totalUSD: totalUSD.toFixed(2),
+        totalUSD: price.toFixed(2),
         username,
         email,
         phone,
@@ -257,11 +217,12 @@
       };
 
       try {
-        await balanceRef.set(currentBalance - totalUSD);
+        await balanceRef.set(currentBalance - price);
         await db.ref(`orders/${currentUser.uid}/${reference}`).set(orderObj);
         await db.ref(`adminOrders/${reference}`).set(orderObj);
+
         alert("✅ Order placed successfully!");
-        window.location.href = "order-history.html";
+        window.location.href = "admin-order.html"; // ✅ sends details to admin page
       } catch (e) {
         alert("Error: " + e.message);
       }
