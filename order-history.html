@@ -120,7 +120,7 @@
     let displayedCount = 0;
     const PAGE_SIZE = 15;
 
-    // ✅ Auth State
+    // ✅ Auth Check
     auth.onAuthStateChanged(user => {
       if (user) {
         if (user.email === "admin@google.com" || user.email === "admin@gmail.com") {
@@ -133,51 +133,61 @@
       }
     });
 
-    // ✅ Admin loads ALL users' orders
+    // ✅ Admin: Load ALL users' orders
     function loadAllOrdersForAdmin() {
       const ordersRef = db.ref("orders");
-      ordersRef.on("value", snapshot => {
-        tbody.innerHTML = "";
+      ordersRef.once("value").then(snapshot => {
         allOrders = [];
 
-        if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
-          return;
-        }
-
         snapshot.forEach(userSnap => {
-          const uid = userSnap.key;
           userSnap.forEach(orderSnap => {
-            allOrders.push({ id: orderSnap.key, uid, ...orderSnap.val() });
+            const orderData = orderSnap.val();
+            allOrders.push({
+              id: orderSnap.key,
+              uid: userSnap.key,
+              ...orderData
+            });
           });
         });
 
-        allOrders.reverse();
-        displayedCount = 0;
-        displayNextBatch();
-      });
-    }
-
-    // ✅ Normal user loads their own
-    function loadUserOrders(uid) {
-      const ordersRef = db.ref(`orders/${uid}`);
-      ordersRef.on("value", snapshot => {
-        tbody.innerHTML = "";
-        allOrders = [];
-
-        if (!snapshot.exists()) {
+        if (allOrders.length === 0) {
           tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
           return;
         }
 
-        snapshot.forEach(child => allOrders.push({ id: child.key, uid, ...child.val() }));
-        allOrders.reverse();
+        allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
         displayedCount = 0;
         displayNextBatch();
       });
     }
 
-    // ✅ Display paginated orders
+    // ✅ Normal user orders
+    function loadUserOrders(uid) {
+      const ordersRef = db.ref(`orders/${uid}`);
+      ordersRef.once("value").then(snapshot => {
+        allOrders = [];
+
+        snapshot.forEach(child => {
+          const data = child.val();
+          allOrders.push({
+            id: child.key,
+            uid,
+            ...data
+          });
+        });
+
+        if (allOrders.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
+          return;
+        }
+
+        allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        displayedCount = 0;
+        displayNextBatch();
+      });
+    }
+
+    // ✅ Display in batches
     function displayNextBatch() {
       const slice = allOrders.slice(displayedCount, displayedCount + PAGE_SIZE);
       if (displayedCount === 0) tbody.innerHTML = "";
@@ -192,29 +202,34 @@
           Pending: "#555"
         };
         const color = colorMap[order.status] || "#555";
+        const total = parseFloat(order.totalCost || 0);
 
-        tbody.innerHTML += `
+        const row = `
           <tr>
             <td>${count}</td>
             <td>${order.email || "User"}</td>
             <td>${order.platform || "-"}</td>
             <td>${order.service || "-"}</td>
             <td>${order.qty || 0}</td>
-            <td>$${parseFloat(order.totalCost || 0).toFixed(2)}</td>
+            <td>$${total.toFixed(2)}</td>
             <td>${order.username || "-"}</td>
             <td><span style="color:${color};font-weight:600;">${order.status || "Pending"}</span></td>
             <td>${order.date || "-"}</td>
-            <td><button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑 Delete</button></td>
+            <td>
+              <button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑 Delete</button>
+            </td>
           </tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
       });
 
       displayedCount += slice.length;
       loadMoreBtn.style.display = displayedCount < allOrders.length ? "block" : "none";
     }
 
-    // ✅ Delete order (also from adminOrders)
+    // ✅ Delete Order
     async function deleteOrder(uid, orderId, reference) {
       if (!confirm("Are you sure you want to delete this order?")) return;
+
       try {
         await db.ref(`orders/${uid}/${orderId}`).remove();
 
@@ -222,7 +237,9 @@
           const adminSnap = await db.ref("adminOrders").once("value");
           adminSnap.forEach(child => {
             const order = child.val();
-            if (order.reference === reference) db.ref("adminOrders/" + child.key).remove();
+            if (order.reference === reference) {
+              db.ref("adminOrders/" + child.key).remove();
+            }
           });
         }
 
@@ -230,6 +247,7 @@
         await logDelete({ uid, orderId, reference });
 
         alert("✅ Order deleted successfully!");
+        loadAllOrdersForAdmin(); // refresh after delete
       } catch (err) {
         alert("❌ Error deleting order: " + err.message);
       }
