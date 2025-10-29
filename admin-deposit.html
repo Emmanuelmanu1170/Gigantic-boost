@@ -2,55 +2,122 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Deposit – Kwabenamedia</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>💰 Admin Deposit – Kwabenamedia</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
   <style>
     body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}
     header{background:#004aad;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
     header h2{margin:0;font-weight:600;}
-
-    main{padding:25px;}
-    .card{background:white;padding:25px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);max-width:500px;margin:auto;}
-    input,button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;font-size:15px;}
-    input{background:#f1f3f6;}
-    button{background:#004aad;color:white;font-weight:600;cursor:pointer;}
-    button:hover{background:#003080;}
-    .balance{margin-top:10px;font-weight:600;color:#004aad;text-align:center;}
-    .success{color:green;text-align:center;margin-top:10px;}
-    .error{color:red;text-align:center;margin-top:10px;}
+    header span{font-size:14px;color:#e0e0e0;}
+    .container{display:flex;}
+    nav{width:230px;background:#003366;color:#fff;min-height:100vh;padding-top:25px;}
+    nav h3{text-align:center;margin-bottom:20px;}
+    nav a{display:block;color:#fff;text-decoration:none;padding:12px 20px;border-left:4px solid transparent;transition:0.3s;font-weight:500;}
+    nav a:hover,nav a.active{background:#0055aa;border-left-color:#fff;}
+    main{flex:1;padding:25px;}
+    h3{color:#004aad;}
+    .form-container{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);max-width:600px;margin-bottom:30px;}
+    label{font-weight:600;display:block;margin-top:10px;color:#333;}
+    input,select{width:100%;padding:10px;margin-top:6px;border:1px solid #ccc;border-radius:6px;font-size:15px;}
+    button{padding:10px 16px;border:none;border-radius:6px;color:white;font-weight:600;cursor:pointer;}
+    .submitBtn{background:#004aad;width:100%;margin-top:15px;}
+    .submitBtn:hover{background:#003b88;}
+    table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,0.05);border-radius:8px;overflow:hidden;}
+    th,td{border:1px solid #eee;padding:12px;text-align:left;font-size:15px;}
+    th{background:#004aad;color:white;}
+    tr:nth-child(even){background:#f9f9f9;}
+    tr:hover{background:#eef5ff;transition:0.3s;}
+    .delete-btn{background:#dc3545;padding:8px 12px;border:none;border-radius:5px;color:#fff;cursor:pointer;}
+    .delete-btn:hover{background:#b52a37;}
+    .action-btn{background:#007bff;padding:8px 12px;border:none;border-radius:5px;color:#fff;cursor:pointer;}
+    .action-btn:hover{background:#005ec2;}
+    .status{padding:5px 10px;border-radius:5px;color:#fff;font-weight:bold;text-transform:capitalize;}
+    .Approved{background:#28a745;}
+    .Pending{background:#ff9800;}
+    .Rejected{background:#dc3545;}
+    @media(max-width:768px){
+      nav{width:100%;display:flex;overflow-x:auto;}
+      nav a{flex:1;text-align:center;font-size:14px;}
+    }
   </style>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
   <header>
-    <h2>💰 Admin Deposit & Deduction</h2>
-    <button onclick="window.location.href='admin-dashboard.html'" style="background:#ffa500;padding:8px 14px;border:none;border-radius:8px;color:#fff;font-weight:600;">⬅ Back</button>
+    <h2>💰 Admin Deposit</h2>
+    <span id="datetime"></span>
   </header>
 
-  <main>
-    <div class="card">
-      <h3>🔍 Find User & Adjust Balance</h3>
-      <input type="email" id="email" placeholder="Enter user email" required>
-      <button onclick="findUser()">Search User</button>
+  <div class="container">
+    <nav>
+      <h3>Kwabenamedia</h3>
+      <a href="admin-dashboard.html">📊 Overview</a>
+      <a href="admin-users.html">👥 Users</a>
+      <a href="admin-orders.html">🛒 Orders</a>
+      <a href="admin-deposit.html" class="active">💳 Deposits</a>
+      <a href="admin-services.html">⚙️ Services</a>
+      <a href="#" class="logout" onclick="logout()">🚪 Logout</a>
+    </nav>
 
-      <div class="balance" id="balanceDisplay"></div>
+    <main>
+      <h3>Add Funds to User Wallet</h3>
+      <div class="form-container">
+        <label>User UID</label>
+        <input type="text" id="userUID" placeholder="Enter user UID">
 
-      <div id="adjustSection" style="display:none;">
-        <input type="number" id="amount" placeholder="Enter amount to subtract" min="0">
-        <button onclick="subtractFunds()">➖ Subtract Funds</button>
-        <div id="msg"></div>
+        <label>Amount (USD)</label>
+        <input type="number" id="depositAmount" placeholder="Enter amount in USD" min="1">
+
+        <label>Payment Method</label>
+        <select id="paymentMethod">
+          <option value="Mobile Money">Mobile Money</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Cash">Cash</option>
+        </select>
+
+        <button class="submitBtn" id="depositBtn">Credit Account</button>
       </div>
-    </div>
-  </main>
+
+      <!-- ✅ Deduction Section -->
+      <h3>Deduct Funds from User Wallet</h3>
+      <div class="form-container">
+        <label>User UID</label>
+        <input type="text" id="deductUID" placeholder="Enter user UID">
+
+        <label>Amount (USD)</label>
+        <input type="number" id="deductAmount" placeholder="Enter amount to deduct" min="1">
+
+        <button class="submitBtn" id="deductBtn" style="background:#dc3545;">Deduct Amount</button>
+      </div>
+
+      <h3>📋 Deposit History</h3>
+      <table id="depositTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>UID</th>
+            <th>Amount (USD)</th>
+            <th>Method</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="depositBody"><tr><td colspan="7" style="text-align:center;">Loading...</td></tr></tbody>
+      </table>
+    </main>
+  </div>
 
   <script>
     // ✅ Firebase config
-    const firebaseConfig = {
+    const firebaseConfig={
       apiKey:"AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
       authDomain:"kwabenamedia.firebaseapp.com",
       databaseURL:"https://kwabenamedia-default-rtdb.firebaseio.com",
@@ -60,51 +127,127 @@
       appId:"1:508812066118:web:5bf0b2f7f7844d05b3b947"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db=firebase.database();
+    const firestore=firebase.firestore();
+    const auth=firebase.auth();
 
-    let foundUserKey = null;
-    let currentBalance = 0;
+    const depositBtn=document.getElementById("depositBtn");
+    const deductBtn=document.getElementById("deductBtn");
+    const depositBody=document.getElementById("depositBody");
 
-    function findUser(){
-      const email = document.getElementById("email").value.trim().toLowerCase();
-      if(!email){alert("Enter user email");return;}
+    // ✅ Add deposit manually
+    depositBtn.addEventListener("click",async()=>{
+      const uid=document.getElementById("userUID").value.trim();
+      const amount=parseFloat(document.getElementById("depositAmount").value);
+      const method=document.getElementById("paymentMethod").value;
 
-      db.ref("users").once("value").then(snap=>{
-        let found = false;
-        snap.forEach(child=>{
-          const data = child.val();
-          if(data.email && data.email.toLowerCase() === email){
-            foundUserKey = child.key;
-            currentBalance = parseFloat(data.balance || 0);
-            document.getElementById("balanceDisplay").textContent = "Current Balance: $" + currentBalance.toFixed(2);
-            document.getElementById("adjustSection").style.display = "block";
-            document.getElementById("msg").textContent = "";
-            found = true;
-          }
+      if(!uid||!amount||amount<=0){alert("⚠️ Enter a valid UID and amount.");return;}
+      if(!confirm(`Are you sure you want to credit UID: ${uid} with $${amount}?`))return;
+
+      try{
+        const userRef=db.ref("users/"+uid);
+        const userSnap=await userRef.once("value");
+        if(!userSnap.exists()){alert("❌ UID not found.");return;}
+
+        const balanceRef=db.ref(`users/${uid}/balance`);
+        const balSnap=await balanceRef.once("value");
+        const oldBal=parseFloat(balSnap.val())||0;
+        const newBal=oldBal+amount;
+        await balanceRef.set(newBal);
+        await firestore.collection("users").doc(uid).set({balance:newBal},{merge:true});
+
+        await db.ref(`deposits/${uid}`).push({
+          uid,amountUSD:amount,method,
+          date:new Date().toLocaleString(),
+          status:"Approved"
         });
-        if(!found){
-          document.getElementById("balanceDisplay").textContent = "❌ User not found.";
-          document.getElementById("adjustSection").style.display = "none";
-        }
+
+        alert(`✅ UID: ${uid} credited with $${amount}.`);
+        loadDeposits();
+      }catch(err){alert("❌ Error: "+err.message);}
+    });
+
+    // ✅ Deduct funds
+    deductBtn.addEventListener("click",async()=>{
+      const uid=document.getElementById("deductUID").value.trim();
+      const amount=parseFloat(document.getElementById("deductAmount").value);
+
+      if(!uid||!amount||amount<=0){alert("⚠️ Enter valid UID and amount.");return;}
+      if(!confirm(`Are you sure you want to deduct $${amount} from UID: ${uid}?`))return;
+
+      try{
+        const balanceRef=db.ref(`users/${uid}/balance`);
+        const balSnap=await balanceRef.once("value");
+        const oldBal=parseFloat(balSnap.val())||0;
+        if(oldBal<amount){alert("❌ Insufficient balance.");return;}
+
+        const newBal=oldBal-amount;
+        await balanceRef.set(newBal);
+        await firestore.collection("users").doc(uid).set({balance:newBal},{merge:true});
+
+        await db.ref(`deposits/${uid}`).push({
+          uid,amountUSD:-amount,method:"Deduction",
+          date:new Date().toLocaleString(),
+          status:"Approved"
+        });
+
+        alert(`✅ $${amount} deducted from UID: ${uid}.`);
+        loadDeposits();
+      }catch(err){alert("❌ Error: "+err.message);}
+    });
+
+    // ✅ Load deposits
+    function loadDeposits(){
+      db.ref("deposits").on("value",snap=>{
+        depositBody.innerHTML="";
+        let count=0;
+        snap.forEach(userSnap=>{
+          userSnap.forEach(dep=>{
+            const d=dep.val();
+            const uid=userSnap.key;
+            depositBody.innerHTML+=`
+              <tr>
+                <td>${++count}</td>
+                <td>${uid}</td>
+                <td>${parseFloat(d.amountUSD||0)>=0?"$"+parseFloat(d.amountUSD).toFixed(2):"-$"+Math.abs(d.amountUSD).toFixed(2)}</td>
+                <td>${d.method||"-"}</td>
+                <td>${d.date||"-"}</td>
+                <td><span class="status ${d.status||'Pending'}">${d.status||'Pending'}</span></td>
+                <td>
+                  <button class="action-btn" onclick="changeStatus('${uid}','${dep.key}','${d.status||'Pending'}')">Change</button>
+                  <button class="delete-btn" onclick="deleteDeposit('${uid}','${dep.key}')">🗑</button>
+                </td>
+              </tr>`;
+          });
+        });
+        if(count===0)depositBody.innerHTML=`<tr><td colspan="7" style="text-align:center;">No deposits yet</td></tr>`;
       });
     }
 
-    function subtractFunds(){
-      const amount = parseFloat(document.getElementById("amount").value);
-      if(isNaN(amount) || amount <= 0){alert("Enter a valid amount.");return;}
-      if(foundUserKey === null){alert("Find a user first.");return;}
-      if(amount > currentBalance){alert("❌ Cannot subtract more than available balance.");return;}
-
-      const newBalance = currentBalance - amount;
-      db.ref("users/"+foundUserKey+"/balance").set(newBalance)
-      .then(()=>{
-        document.getElementById("msg").innerHTML = "<p class='success'>✅ Funds successfully subtracted!</p>";
-        document.getElementById("balanceDisplay").textContent = "New Balance: $" + newBalance.toFixed(2);
-      })
-      .catch(err=>{
-        document.getElementById("msg").innerHTML = "<p class='error'>❌ Error: " + err.message + "</p>";
-      });
+    function changeStatus(uid,depKey,currentStatus){
+      const newStatus=prompt("Enter new status (Pending / Approved / Rejected):",currentStatus);
+      if(!newStatus)return;
+      if(!["Pending","Approved","Rejected"].includes(newStatus)){
+        alert("Invalid status.");return;
+      }
+      db.ref(`deposits/${uid}/${depKey}/status`).set(newStatus)
+      .then(()=>alert(`✅ Status updated.`))
+      .catch(err=>alert("❌ "+err.message));
     }
+
+    function deleteDeposit(uid,depKey){
+      if(confirm("Delete this deposit?")){
+        db.ref(`deposits/${uid}/${depKey}`).remove()
+        .then(()=>alert("🗑 Deleted."))
+        .catch(err=>alert("Error: "+err.message));
+      }
+    }
+
+    function logout(){auth.signOut();localStorage.clear();window.location.href="login.html";}
+    function updateDateTime(){document.getElementById("datetime").textContent=new Date().toLocaleString();}
+    setInterval(updateDateTime,1000);
+    updateDateTime();
+    loadDeposits();
   </script>
 </body>
 </html>
