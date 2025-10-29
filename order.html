@@ -75,7 +75,7 @@
   <script type="module">
     // Firebase Imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, push, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, push, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // Firebase Config
@@ -228,6 +228,7 @@
 
       const serviceData = servicesData[platform][service];
       const totalCost = (qty / 1000) * serviceData.price;
+      const totalDisplay = parseFloat(priceUSD.textContent);
 
       if (currentBalance < totalCost) {
         alert("Insufficient balance. Please add funds.");
@@ -235,18 +236,25 @@
       }
 
       const orderData = {
-        platform, service, qty, username, email, phone,
-        totalCost, date: new Date().toLocaleString(), status: "Pending"
+        platform,
+        service,
+        qty,
+        username,
+        email,
+        phone,
+        totalCost: totalDisplay.toFixed(2),
+        date: new Date().toLocaleString(),
+        status: "Pending"
       };
 
       try {
         // Save to user orders
         const userOrderRef = ref(db, `orders/${currentUID}`);
-        push(userOrderRef, orderData);
+        await push(userOrderRef, orderData);
 
         // Save to adminOrders
         const adminOrderRef = ref(db, "adminOrders");
-        push(adminOrderRef, { ...orderData, user: currentUID });
+        await push(adminOrderRef, { ...orderData, user: currentUID });
 
         // Deduct from balance
         const newBalance = currentBalance - totalCost;
