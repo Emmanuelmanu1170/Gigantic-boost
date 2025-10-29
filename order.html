@@ -1,258 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kwabenamedia — Place Order</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 500px;
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin: 0 auto;
-    }
-    h2 {
-      text-align: center;
-      color: #1a8917;
-    }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 15px;
-    }
-    select, input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      margin-top: 5px;
-    }
-    button {
-      width: 100%;
-      background: #1a8917;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #157012;
-    }
-    .price-box {
-      margin-top: 15px;
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    .balance {
-      font-size: 14px;
-      color: #555;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+    body { background: #f3f7fc; display: flex; min-height: 100vh; }
+    .sidebar { background: #003366; color: #fff; width: 240px; padding: 25px 10px; display: flex; flex-direction: column; align-items: flex-start; position: fixed; height: 100%; }
+    .sidebar h2 { width: 100%; text-align: center; margin-bottom: 30px; color: #fff; font-size: 22px; font-weight: 700; }
+    .sidebar a { color: #fff; text-decoration: none; display: block; width: 100%; padding: 12px 15px; border-radius: 8px; margin: 5px 0; transition: background 0.25s; font-weight: 500; }
+    .sidebar a:hover, .sidebar a.active { background: #0055aa; }
+    .main { flex: 1; padding: 40px; margin-left: 240px; }
+    .container { background: #fff; border: 1px solid #dce3ee; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,.05); max-width: 650px; margin: auto; padding: 25px; }
+    h2 { text-align: center; color: #004aad; margin-bottom: 20px; }
+    label { display: block; margin-top: 12px; font-weight: 600; color: #333; }
+    select, input { width: 100%; padding: 10px; margin-top: 6px; border-radius: 6px; border: 1px solid #cdd5e0; outline: none; font-size: 14px; }
+    .price-box { margin-top: 10px; background: #f7f9fc; padding: 12px; border-radius: 6px; border: 1px solid #e1e7f0; }
+    button { background: #004aad; color: #fff; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 16px; margin-top: 18px; cursor: pointer; transition: background 0.25s; }
+    button:hover { background: #003b88; }
+    .balance { font-weight: 700; color: #004aad; }
+    @media(max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; flex-direction: row; overflow-x: auto; justify-content: space-around; position: relative; height: auto; }
+      .main { padding: 20px; margin-left: 0; }
     }
     #refreshBalance {
-      background: none;
+      background: #004aad;
+      color: #fff;
       border: none;
-      color: #1a8917;
-      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 13px;
+      margin-left: 10px;
+      transition: 0.3s;
     }
+    #refreshBalance:hover { background: #003b88; }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
+      authDomain: "kwabenamedia.firebaseapp.com",
+      databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
+      projectId: "kwabenamedia",
+      storageBucket: "kwabenamedia.firebasestorage.app",
+      messagingSenderId: "508812066118",
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+  </script>
 </head>
+
 <body>
+  <div class="sidebar">
+    <h2>Kwabenamedia</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="order.html" class="active">🛒 Place Order</a>
+    <a href="order-history.html">📋 Order History</a>
+    <a href="add-funds.html">💰 Add Funds</a>
+    <a href="funds-history.html">🧾 Funds History</a>
+    <a href="settings.html">⚙️ Settings</a>
+  </div>
 
-<div class="container">
-  <h2>Place Your Order</h2>
-  
-  <label>Platform</label>
-  <select id="platform">
-    <option value="">-- Select Platform --</option>
-  </select>
+  <div class="main">
+    <div class="container">
+      <h2>Place Your Order</h2>
 
-  <label>Service</label>
-  <select id="service">
-    <option value="">-- Select Service --</option>
-  </select>
+      <label>Platform</label>
+      <select id="platform">
+        <option value="">-- Select Platform --</option>
+      </select>
 
-  <label>Quantity (Per 1000)</label>
-  <input type="number" id="quantity" value="200" min="200">
+      <label>Service</label>
+      <select id="service"><option value="">-- Select Service --</option></select>
 
-  <div class="price-box">
-    <p><strong>Price in USD:</strong> $<span id="priceUSD">0</span></p>
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-      <p class="balance">Balance: $<span id="balanceValue">0.00</span></p>
-      <button id="refreshBalance">🔄 Refresh</button>
+      <label>Quantity (Per 1000)</label>
+      <input type="number" id="quantity" value="200" min="200">
+
+      <div class="price-box">
+        <p><strong>Price in USD:</strong> $<span id="priceUSD">0</span></p>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+          <p class="balance">Balance: $<span id="balanceValue">0.00</span></p>
+          <button id="refreshBalance">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <label>Username / Link</label>
+      <input type="text" id="username" placeholder="Enter username or post link">
+
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com">
+
+      <label>Phone</label>
+      <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx">
+
+      <button id="placeBtn">Place Order</button>
     </div>
   </div>
 
-  <label>Username / Link</label>
-  <input type="text" id="username" placeholder="Enter username or post link">
+  <script>
+    // ✅ Full updated services + pricing
+    const prices = {
+      TikTok: {
+        "Followers (Refill 20 Days) (ID 18236)": 3.7,
+        "Followers Non Drop (ID 10135)": 5.7,
+        "Likes (Refill 20 Days) (ID 13088)": 0.9,
+        "Likes Non Drop | Super Instant (ID 4949)": 2,
+        "Views (ID 17776)": 0.9,
+        "Views Super Instant (ID 11183)": 1.1,
+        "Shares (ID 11105)": 1
+      },
+      Instagram: {
+        "Followers Real Accounts (ID 27270)": 7,
+        "Likes Non Drop (ID 27295)": 1,
+        "Views Non Drop (ID 11184)": 1.5
+      },
+      YouTube: {
+        "Views Non Drop (ID 24978)": 4.8,
+        "Likes Lifetime Guaranteed (ID 1865)": 2,
+        "Subscribers Lifetime Guaranteed (ID 18274)": 65
+      },
+      Telegram: {
+        "Members Non Drop (ID 15521)": 4,
+        "Reactions (ID 19003)": 2,
+        "Views (ID 15982)": 3
+      },
+      Facebook: {
+        "Followers Lifetime Guaranteed (ID 22328)": 4,
+        "Likes Instant | Non Drop | Lifetime Guaranteed (ID 10372)": 8,
+        "Likes (ID 10036)": 3,
+        "Views Monetizable (ID 16611)": 2
+      },
+      WhatsApp: {
+        "Channel Members (ID 18706)": 13
+      },
+      LinkedIn: {
+        "AI Growth (ID 20944)": 100
+      },
+      Twitter: {
+        "Followers Non Drop (ID 16269)": 20,
+        "Views (ID 3775)": 1,
+        "Likes (ID 10864)": 1.2
+      }
+    };
 
-  <label>Email</label>
-  <input type="email" id="email" placeholder="you@example.com">
+    const platformSelect = document.getElementById("platform");
+    const serviceSelect = document.getElementById("service");
+    const quantityInput = document.getElementById("quantity");
+    const priceUSD = document.getElementById("priceUSD");
+    const balanceValue = document.getElementById("balanceValue");
+    const refreshBtn = document.getElementById("refreshBalance");
+    const placeBtn = document.getElementById("placeBtn");
 
-  <label>Phone</label>
-  <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx">
+    Object.keys(prices).forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p;
+      opt.textContent = p;
+      platformSelect.appendChild(opt);
+    });
 
-  <button id="placeBtn">Place Order</button>
-</div>
-
-<script type="module">
-  // Firebase imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
-    authDomain: "kwabenamedia.firebaseapp.com",
-    databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
-    projectId: "kwabenamedia",
-    storageBucket: "kwabenamedia.firebasestorage.app",
-    messagingSenderId: "508812066118",
-    appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
-    measurementId: "G-FWT4S09Z9L"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // Platforms and services
-  const services = {
-    "TikTok": {
-      "Followers (Refill 20 days)": { id: 18236, price: 3.7 },
-      "Followers Non Drop": { id: 10135, price: 5.7 },
-      "Likes (Refill 20 days)": { id: 13088, price: 0.9 },
-      "Likes Non Drop (Super Instant)": { id: 4949, price: 2 },
-      "Views": { id: 17776, price: 0.9 },
-      "Views Super Instant": { id: 11183, price: 1.1 },
-      "Shares": { id: 11105, price: 1 }
-    },
-    "Instagram": {
-      "Followers Real Accounts": { id: 27270, price: 7 },
-      "Likes Non Drop": { id: 27295, price: 1 },
-      "Views Non Drop": { id: 11184, price: 1.5 }
-    },
-    "YouTube": {
-      "Views Non Drop": { id: 24978, price: 4.8 },
-      "Likes Lifetime Guaranteed": { id: 1865, price: 2 },
-      "Subscribers Lifetime Guaranteed": { id: 18274, price: 65 }
-    },
-    "Telegram": {
-      "Members Non Drop": { id: 15521, price: 4 },
-      "Reactions": { id: 19003, price: 2 },
-      "Views": { id: 15982, price: 3 }
-    },
-    "Facebook": {
-      "Followers Lifetime Guaranteed": { id: 22328, price: 4 },
-      "Likes Instant Non Drop Lifetime": { id: 10372, price: 8 },
-      "Likes": { id: 10036, price: 3 },
-      "Views Monetizable": { id: 16611, price: 2 }
-    },
-    "WhatsApp": {
-      "Channel Members": { id: 18706, price: 13 }
-    },
-    "LinkedIn": {
-      "AI Growth": { id: 20944, price: 100 }
-    },
-    "Twitter": {
-      "Followers Non Drop": { id: 16269, price: 20 },
-      "Views": { id: 3775, price: 1 },
-      "Likes": { id: 10864, price: 1.2 }
-    }
-  };
-
-  // Load platforms
-  const platformSelect = document.getElementById("platform");
-  Object.keys(services).forEach(p => {
-    const opt = document.createElement("option");
-    opt.value = p;
-    opt.textContent = p;
-    platformSelect.appendChild(opt);
-  });
-
-  // Load services when platform changes
-  const serviceSelect = document.getElementById("service");
-  platformSelect.addEventListener("change", () => {
-    serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
-    const selected = platformSelect.value;
-    if (selected && services[selected]) {
-      Object.keys(services[selected]).forEach(s => {
+    platformSelect.addEventListener("change", () => {
+      serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
+      const list = prices[platformSelect.value];
+      if (list) Object.keys(list).forEach(s => {
         const opt = document.createElement("option");
         opt.value = s;
         opt.textContent = s;
         serviceSelect.appendChild(opt);
       });
-    }
-  });
+      updatePrice();
+    });
 
-  // Price calculation
-  const quantityInput = document.getElementById("quantity");
-  const priceUSDSpan = document.getElementById("priceUSD");
-  serviceSelect.addEventListener("change", updatePrice);
-  quantityInput.addEventListener("input", updatePrice);
-
-  function updatePrice() {
-    const platform = platformSelect.value;
-    const service = serviceSelect.value;
-    const qty = parseFloat(quantityInput.value) || 0;
-    if (platform && service && services[platform][service]) {
-      const base = services[platform][service].price;
-      const price = (qty / 1000) * base;
-      priceUSDSpan.textContent = price.toFixed(2);
-    } else {
-      priceUSDSpan.textContent = "0";
-    }
-  }
-
-  // Place order
-  document.getElementById("placeBtn").addEventListener("click", async () => {
-    const platform = platformSelect.value;
-    const service = serviceSelect.value;
-    const qty = quantityInput.value;
-    const price = priceUSDSpan.textContent;
-    const username = document.getElementById("username").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-
-    if (!platform || !service || !qty || !username || !email || !phone) {
-      alert("Please fill all fields correctly.");
-      return;
+    function updatePrice() {
+      const p = platformSelect.value;
+      const s = serviceSelect.value;
+      const q = parseInt(quantityInput.value) || 0;
+      if (p && s && q > 0) {
+        const usd = prices[p][s];
+        priceUSD.textContent = (usd * q / 1000).toFixed(2);
+      } else priceUSD.textContent = "0";
     }
 
-    const orderData = {
-      platform,
-      service,
-      quantity: qty,
-      priceUSD: price,
-      username,
-      email,
-      phone,
-      date: new Date().toLocaleString(),
-      status: "Pending"
-    };
+    serviceSelect.addEventListener("change", updatePrice);
+    quantityInput.addEventListener("input", updatePrice);
 
-    try {
-      await push(ref(db, "orders/"), orderData);
-      alert("✅ Order placed successfully!");
-      window.location.href = "order-history.html";
-    } catch (err) {
-      console.error(err);
-      alert("❌ Failed to place order. Try again.");
-    }
-  });
-</script>
+    let currentUser = null;
+    let balRef = null;
+    auth.onAuthStateChanged(user => {
+      if (!user) return (window.location.href = "index.html");
+      currentUser = user;
+      balRef = db.ref(`users/${user.uid}/balance`);
+      balRef.on("value", snap => {
+        const val = parseFloat(snap.val()) || 0;
+        balanceValue.textContent = val.toFixed(2);
+      });
+    });
 
+    refreshBtn.addEventListener("click", async () => {
+      if (!currentUser) return alert("Please login again.");
+      const snap = await db.ref(`users/${currentUser.uid}/balance`).once("value");
+      const val = parseFloat(snap.val()) || 0;
+      balanceValue.textContent = val.toFixed(2);
+      alert("🔁 Balance refreshed successfully!");
+    });
+
+    const ADMIN_WA = "233554263293";
+
+    placeBtn.addEventListener("click", async () => {
+      if (!currentUser) return alert("Please login again.");
+      const platform = platformSelect.value;
+      const service = serviceSelect.value;
+      const qty = parseInt(quantityInput.value);
+      const price = parseFloat(priceUSD.textContent);
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+
+      if (!platform || !service || qty < 200 || !username || !email || !phone)
+        return alert("⚠️ Please fill all fields. Minimum order is 200 units.");
+
+      const totalUSD = price;
+      const balanceRef = db.ref(`users/${currentUser.uid}/balance`);
+      const balSnap = await balanceRef.once("value");
+      const currentBalance = parseFloat(balSnap.val()) || 0;
+
+      if (currentBalance < totalUSD)
+        return alert("❌ Insufficient balance! Please add funds.");
+
+      const reference = "ORD-" + Date.now().toString().slice(-8);
+      const orderObj = {
+        uid: currentUser.uid,
+        platform,
+        service,
+        quantity: qty,
+        priceUSD: price.toFixed(2),
+        totalUSD: totalUSD.toFixed(2),
+        username,
+        email,
+        phone,
+        reference,
+        date: new Date().toLocaleString(),
+        status: "Pending"
+      };
+
+      try {
+        await balanceRef.set(currentBalance - totalUSD);
+        await db.ref(`orders/${currentUser.uid}/${reference}`).set(orderObj);
+        await db.ref(`adminOrders/${reference}`).set(orderObj);
+        alert("✅ Order placed successfully!");
+        window.location.href = "order-history.html";
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    });
+  </script>
 </body>
 </html>
