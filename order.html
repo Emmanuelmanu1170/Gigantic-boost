@@ -77,6 +77,7 @@
     import { getDatabase, ref, push, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+    // --- Firebase Config ---
     const firebaseConfig = {
       apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
       authDomain: "kwabenamedia.firebaseapp.com",
@@ -92,6 +93,7 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    // --- Services Data ---
     const servicesData = {
       TikTok: {
         "Followers (Refill 20 days)": { id: 18236, price: 3.7 },
@@ -132,6 +134,7 @@
       }
     };
 
+    // --- DOM Elements ---
     const platformSelect = document.getElementById("platform");
     const serviceSelect = document.getElementById("service");
     const quantityInput = document.getElementById("quantity");
@@ -140,6 +143,7 @@
     const refreshBalance = document.getElementById("refreshBalance");
     const placeBtn = document.getElementById("placeBtn");
 
+    // --- Populate Platforms ---
     Object.keys(servicesData).forEach(platform => {
       const opt = document.createElement("option");
       opt.value = platform;
@@ -147,6 +151,7 @@
       platformSelect.appendChild(opt);
     });
 
+    // --- Populate Services when Platform changes ---
     platformSelect.addEventListener("change", () => {
       serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
       const services = servicesData[platformSelect.value];
@@ -160,6 +165,7 @@
       }
     });
 
+    // --- Price Calculation ---
     serviceSelect.addEventListener("change", updatePrice);
     quantityInput.addEventListener("input", updatePrice);
 
@@ -173,6 +179,7 @@
       priceUSD.textContent = total.toFixed(2);
     }
 
+    // --- Auth State ---
     let currentUID = null;
     let currentBalance = 0;
 
@@ -186,19 +193,33 @@
       }
     });
 
+    // ✅ --- FIXED: Fetch Balance function ---
     async function fetchBalance() {
-      const snapshot = await get(ref(db, `users/${currentUID}/balance`));
-      if (snapshot.exists()) {
-        currentBalance = snapshot.val();
-        balanceValue.textContent = currentBalance.toFixed(2);
-      } else {
-        currentBalance = 0;
+      try {
+        const snapshot = await get(ref(db, `users/${currentUID}`));
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          if (data.balance !== undefined) {
+            currentBalance = parseFloat(data.balance);
+          } else if (data.wallet && data.wallet.balance !== undefined) {
+            currentBalance = parseFloat(data.wallet.balance);
+          } else {
+            currentBalance = 0;
+          }
+          balanceValue.textContent = currentBalance.toFixed(2);
+        } else {
+          currentBalance = 0;
+          balanceValue.textContent = "0.00";
+        }
+      } catch (error) {
+        console.error("Error fetching balance:", error);
         balanceValue.textContent = "0.00";
       }
     }
 
     refreshBalance.addEventListener("click", fetchBalance);
 
+    // --- Place Order ---
     placeBtn.addEventListener("click", async () => {
       const platform = platformSelect.value;
       const service = serviceSelect.value;
@@ -227,18 +248,21 @@
         username,
         email,
         phone,
-        totalCost: totalCost.toFixed(2), // ✅ FIXED: real total value saved
+        totalCost: totalCost.toFixed(2),
         date: new Date().toLocaleString(),
         status: "Pending"
       };
 
       try {
+        // Save to user orders
         const userOrderRef = ref(db, `orders/${currentUID}`);
         await push(userOrderRef, orderData);
 
+        // Save to adminOrders
         const adminOrderRef = ref(db, "adminOrders");
         await push(adminOrderRef, { ...orderData, user: currentUID });
 
+        // Deduct balance
         const newBalance = currentBalance - totalCost;
         await update(ref(db, `users/${currentUID}`), { balance: newBalance });
         currentBalance = newBalance;
