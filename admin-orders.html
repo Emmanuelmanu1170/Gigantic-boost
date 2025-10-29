@@ -1,277 +1,260 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>🛒 Admin – Orders | Kwabenamedia</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-  <style>
-    body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}
-    header{background:#004aad;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-    header h2{margin:0;font-weight:600;}
-    header span{font-size:14px;color:#e0e0e0;}
-    .container{display:flex;}
-    nav{width:230px;background:#003366;color:#fff;min-height:100vh;padding-top:25px;}
-    nav h3{text-align:center;margin-bottom:20px;}
-    nav a{display:block;color:#fff;text-decoration:none;padding:12px 20px;border-left:4px solid transparent;transition:0.3s;font-weight:500;}
-    nav a:hover,nav a.active{background:#0055aa;border-left-color:#fff;}
-    main{flex:1;padding:25px;}
-    h3{color:#004aad;}
-    .top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-    .top-controls input, .top-controls select{padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;}
-    table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,0.05);border-radius:8px;overflow:hidden;}
-    th,td{border:1px solid #eee;padding:12px;text-align:left;font-size:15px;}
-    th{background:#004aad;color:white;}
-    tr:nth-child(even){background:#f9f9f9;}
-    tr:hover{background:#eef5ff;transition:0.3s;}
-    .status{font-weight:bold;padding:6px 10px;border-radius:5px;color:white;text-transform:capitalize;}
-    .Pending{background:#ff9800;}
-    .Completed{background:#28a745;}
-    .Cancelled{background:#dc3545;}
-    .btn{padding:8px 12px;border:none;border-radius:6px;color:white;font-weight:600;cursor:pointer;margin:2px;}
-    .complete{background:#28a745;}
-    .pending{background:#ff9800;}
-    .cancel{background:#dc3545;}
-    .copy{background:#007bff;}
-    .copy:hover{background:#005ecb;}
-    .export{background:#28a745;}
-    .export:hover{background:#218838;}
-    .logout{background:#ff4d4d;}
-    .logout:hover{background:#e63939;}
-    .depositBtn{background:#ffa500;}
-    .depositBtn:hover{background:#e69500;}
-    .delete{background:#b71c1c;}
-    .delete:hover{background:#8b0000;}
-    @media(max-width:768px){
-      nav{width:100%;display:flex;overflow-x:auto;}
-      nav a{flex:1;text-align:center;font-size:14px;}
-    }
-  </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-</head>
-<body>
-  <header>
-    <h2>🛒 Manage Orders</h2>
-    <div>
-      <button class="depositBtn" onclick="window.location.href='admin-deposit.html'">💰 Admin Deposit</button>
-      <span id="datetime"></span>
-    </div>
-  </header>
-
-  <div class="container">
-    <nav>
-      <h3>Kwabenamedia</h3>
-      <a href="admin.html">📊 Overview</a>
-      <a href="admin-users.html">👥 Users</a>
-      <a href="admin-orders.html" class="active">🛒 Orders</a>
-      <a href="admin-deposit.html">💳 Deposits</a>
-      <a href="admin-services.html">⚙️ Services</a>
-      <a href="#" class="logout" onclick="logout()">🚪 Logout</a>
-    </nav>
-
-    <main>
-      <div class="top-controls">
-        <h3>All Orders</h3>
-        <div>
-          <input type="text" id="searchInput" placeholder="🔍 Search email, platform, or ID...">
-          <select id="filterStatus">
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <button class="export" onclick="exportCSV()">⬇ Export CSV</button>
-        </div>
-      </div>
-
-      <table id="orderTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Order ID</th>
-            <th>Email</th>
-            <th>Platform</th>
-            <th>Service</th>
-            <th>Qty</th>
-            <th>Total ($)</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="orderBody"><tr><td colspan="10" style="text-align:center;">Loading...</td></tr></tbody>
-      </table>
-    </main>
-  </div>
-
-  <script>
-    // Firebase setup
-    const firebaseConfig = {
-      apiKey:"AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
-      authDomain:"kwabenamedia.firebaseapp.com",
-      databaseURL:"https://kwabenamedia-default-rtdb.firebaseio.com",
-      projectId:"kwabenamedia",
-      storageBucket:"kwabenamedia.appspot.com",
-      messagingSenderId:"508812066118",
-      appId:"1:508812066118:web:5bf0b2f7f7844d05b3b947"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db=firebase.database();
-    const auth=firebase.auth();
-
-    const orderBody=document.getElementById("orderBody");
-    const searchInput=document.getElementById("searchInput");
-    const filterStatus=document.getElementById("filterStatus");
-    let orders=[];
-
-    // Load orders
-    db.ref("adminOrders").on("value",snap=>{
-      orders=[];
-      orderBody.innerHTML="";
-      if(!snap.exists()){
-        orderBody.innerHTML="<tr><td colspan='10' style='text-align:center;'>No orders found.</td></tr>";
-        return;
-      }
-
-      snap.forEach(ch=>{
-        const o=ch.val();
-        orders.push({...o, id:ch.key});
-      });
-      renderOrders(orders);
-    });
-
-    // Render orders
-    function renderOrders(list){
-      orderBody.innerHTML="";
-      if(list.length===0){
-        orderBody.innerHTML="<tr><td colspan='10' style='text-align:center;'>No matching orders</td></tr>";
-        return;
-      }
-
-      list.forEach((o,i)=>{
-        const sClass=o.status||"Pending";
-        orderBody.innerHTML+=`
-          <tr>
-            <td>${i+1}</td>
-            <td>
-              <span style="color:#004aad;font-weight:500;">${o.reference||o.id}</span>
-              <button class="btn copy" onclick="copyText('${o.reference||o.id}')">📋</button>
-            </td>
-            <td>${o.email||"—"}</td>
-            <td>${o.platform||"—"}</td>
-            <td>${o.service||"—"}</td>
-            <td>${o.quantity||0}</td>
-            <td>$${o.totalUSD||"0.00"}</td>
-            <td><span class="status ${sClass}">${o.status||"Pending"}</span></td>
-            <td>${o.date||"—"}</td>
-            <td>
-              <button class="btn complete" onclick="updateStatus('${o.id}','Completed')">✅</button>
-              <button class="btn pending" onclick="updateStatus('${o.id}','Pending')">🕒</button>
-              <button class="btn cancel" onclick="updateStatus('${o.id}','Cancelled')">❌</button>
-              <button class="btn delete" onclick="deleteOrder('${o.id}')">🗑️</button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    // ✅ Update order status in both admin and user paths
-    function updateStatus(orderId, newStatus) {
-      if (confirm(`Change order status to "${newStatus}"?`)) {
-        db.ref("adminOrders/" + orderId).once("value").then(snap => {
-          if (!snap.exists()) return alert("Order not found.");
-
-          const order = snap.val();
-          db.ref("adminOrders/" + orderId + "/status").set(newStatus);
-
-          // Sync with user’s own order history path
-          if (order.uid) {
-            db.ref(`orders/${order.uid}`).once("value", userSnap => {
-              userSnap.forEach(orderChild => {
-                if (orderChild.val().reference === order.reference) {
-                  db.ref(`orders/${order.uid}/${orderChild.key}/status`).set(newStatus);
-                }
-              });
-            });
-          }
-
-          alert(`✅ Status updated to ${newStatus}`);
-        }).catch(err => alert("Error: " + err.message));
-      }
-    }
-
-    // ✅ Delete order from both admin and user paths
-    function deleteOrder(orderId) {
-      if (confirm("🗑️ Are you sure you want to delete this order?")) {
-        db.ref("adminOrders/" + orderId).once("value").then(snap => {
-          if (!snap.exists()) return alert("Order not found.");
-          const order = snap.val();
-
-          // Remove from adminOrders
-          db.ref("adminOrders/" + orderId).remove();
-
-          // Remove from user’s path if exists
-          if (order.uid) {
-            db.ref(`orders/${order.uid}`).once("value", userSnap => {
-              userSnap.forEach(orderChild => {
-                if (orderChild.val().reference === order.reference) {
-                  db.ref(`orders/${order.uid}/${orderChild.key}`).remove();
-                }
-              });
-            });
-          }
-
-          alert("✅ Order deleted successfully");
-        }).catch(err => alert("❌ Error deleting order: " + err.message));
-      }
-    }
-
-    // Copy text (Order ID)
-    function copyText(txt){
-      navigator.clipboard.writeText(txt)
-        .then(()=>alert(`✅ Copied: ${txt}`))
-        .catch(()=>alert("❌ Failed to copy"));
-    }
-
-    // Filter + Search
-    searchInput.addEventListener("input",filterOrders);
-    filterStatus.addEventListener("change",filterOrders);
-
-    function filterOrders(){
-      const q=searchInput.value.toLowerCase();
-      const statusFilter=filterStatus.value;
-      const filtered=orders.filter(o=>{
-        const matchQuery=(
-          (o.email||"").toLowerCase().includes(q) ||
-          (o.platform||"").toLowerCase().includes(q) ||
-          (o.reference||"").toLowerCase().includes(q)
-        );
-        const matchStatus=(statusFilter==="All" || o.status===statusFilter);
-        return matchQuery && matchStatus;
-      });
-      renderOrders(filtered);
-    }
-
-    // Export CSV
-    function exportCSV(){
-      if(orders.length===0){alert("No orders to export.");return;}
-      let csv="Order ID,Email,Platform,Service,Qty,Total (USD),Status,Date\n";
-      orders.forEach(o=>{
-        csv+=`${o.reference||o.id},${o.email||""},${o.platform||""},${o.service||""},${o.quantity||0},${o.totalUSD||0},${o.status||""},${o.date||""}\n`;
-      });
-      const blob=new Blob([csv],{type:"text/csv"});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a");
-      a.href=url;a.download="kwabenamedia_orders.csv";a.click();
-    }
-
-    function logout(){auth.signOut();localStorage.clear();window.location.href="login.html";}
-    function updateDateTime(){document.getElementById("datetime").textContent=new Date().toLocaleString();}
-    setInterval(updateDateTime,1000);updateDateTime();
-  </script>
-</body>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8"/>  
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>  
+  <title>🛒 Admin – Orders | Kwabenamedia</title>  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">  
+  
+  <style>  
+    body{font-family:'Poppins',sans-serif;background:#f4f7fb;margin:0;padding:0;}  
+    header{background:#004aad;color:white;padding:15px 25px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.1);}  
+    header h2{margin:0;font-weight:600;}  
+    header span{font-size:14px;color:#e0e0e0;}  
+    .container{display:flex;}  
+    nav{width:230px;background:#003366;color:#fff;min-height:100vh;padding-top:25px;}  
+    nav h3{text-align:center;margin-bottom:20px;}  
+    nav a{display:block;color:#fff;text-decoration:none;padding:12px 20px;border-left:4px solid transparent;transition:0.3s;font-weight:500;}  
+    nav a:hover,nav a.active{background:#0055aa;border-left-color:#fff;}  
+    main{flex:1;padding:25px;}  
+    h3{color:#004aad;}  
+    .top-controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px;}  
+    .top-controls input, .top-controls select{padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;}  
+    table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,0.05);border-radius:8px;overflow:hidden;}  
+    th,td{border:1px solid #eee;padding:12px;text-align:left;font-size:15px;}  
+    th{background:#004aad;color:white;}  
+    tr:nth-child(even){background:#f9f9f9;}  
+    tr:hover{background:#eef5ff;transition:0.3s;}  
+    .status{font-weight:bold;padding:6px 10px;border-radius:5px;color:white;text-transform:capitalize;}  
+    .Pending{background:#ff9800;}  
+    .Completed{background:#28a745;}  
+    .Cancelled{background:#dc3545;}  
+    .btn{padding:8px 12px;border:none;border-radius:6px;color:white;font-weight:600;cursor:pointer;margin:2px;}  
+    .complete{background:#28a745;}  
+    .pending{background:#ff9800;}  
+    .cancel{background:#dc3545;}  
+    .copy{background:#007bff;}  
+    .copy:hover{background:#005ecb;}  
+    .export{background:#28a745;}  
+    .export:hover{background:#218838;}  
+    .logout{background:#ff4d4d;}  
+    .logout:hover{background:#e63939;}  
+    .depositBtn{background:#ffa500;}  
+    .depositBtn:hover{background:#e69500;}  
+    .delete{background:#b71c1c;}  
+    .delete:hover{background:#8b0000;}  
+    @media(max-width:768px){  
+      nav{width:100%;display:flex;overflow-x:auto;}  
+      nav a{flex:1;text-align:center;font-size:14px;}  
+    }  
+  </style>  
+  
+  <!-- Firebase -->  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>  
+</head>  
+<body>  
+  <header>  
+    <h2>🛒 Manage Orders</h2>  
+    <div>  
+      <button class="depositBtn" onclick="window.location.href='admin-deposit.html'">💰 Admin Deposit</button>  
+      <span id="datetime"></span>  
+    </div>  
+  </header>  
+  
+  <div class="container">  
+    <nav>  
+      <h3>Kwabenamedia</h3>  
+      <a href="admin.html">📊 Overview</a>  
+      <a href="admin-users.html">👥 Users</a>  
+      <a href="admin-orders.html" class="active">🛒 Orders</a>  
+      <a href="admin-deposit.html">💳 Deposits</a>  
+      <a href="admin-services.html">⚙️ Services</a>  
+      <a href="#" class="logout" onclick="logout()">🚪 Logout</a>  
+    </nav>  
+  
+    <main>  
+      <div class="top-controls">  
+        <h3>All Orders</h3>  
+        <div>  
+          <input type="text" id="searchInput" placeholder="🔍 Search email, platform, or ID...">  
+          <select id="filterStatus">  
+            <option value="All">All</option>  
+            <option value="Pending">Pending</option>  
+            <option value="Completed">Completed</option>  
+            <option value="Cancelled">Cancelled</option>  
+          </select>  
+          <button class="export" onclick="exportCSV()">⬇ Export CSV</button>  
+        </div>  
+      </div>  
+  
+      <table id="orderTable">  
+        <thead>  
+          <tr>  
+            <th>#</th>  
+            <th>Order ID</th>  
+            <th>Email</th>  
+            <th>Platform</th>  
+            <th>Service</th>  
+            <th>Link</th>  
+            <th>Qty</th>  
+            <th>Total ($)</th>  
+            <th>Status</th>  
+            <th>Date</th>  
+            <th>Actions</th>  
+          </tr>  
+        </thead>  
+        <tbody id="orderBody"><tr><td colspan="11" style="text-align:center;">Loading...</td></tr></tbody>  
+      </table>  
+    </main>  
+  </div>  
+  
+  <script>  
+    const firebaseConfig = {  
+      apiKey:"AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",  
+      authDomain:"kwabenamedia.firebaseapp.com",  
+      databaseURL:"https://kwabenamedia-default-rtdb.firebaseio.com",  
+      projectId:"kwabenamedia",  
+      storageBucket:"kwabenamedia.appspot.com",  
+      messagingSenderId:"508812066118",  
+      appId:"1:508812066118:web:5bf0b2f7f7844d05b3b947"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const db=firebase.database();  
+    const auth=firebase.auth();  
+  
+    const orderBody=document.getElementById("orderBody");  
+    const searchInput=document.getElementById("searchInput");  
+    const filterStatus=document.getElementById("filterStatus");  
+    let orders=[];  
+  
+    db.ref("adminOrders").on("value",snap=>{  
+      orders=[];  
+      orderBody.innerHTML="";  
+      if(!snap.exists()){  
+        orderBody.innerHTML="<tr><td colspan='11' style='text-align:center;'>No orders found.</td></tr>";  
+        return;  
+      }  
+  
+      snap.forEach(ch=>{  
+        const o=ch.val();  
+        orders.push({...o, id:ch.key});  
+      });  
+      renderOrders(orders);  
+    });  
+  
+    function renderOrders(list){  
+      orderBody.innerHTML="";  
+      if(list.length===0){  
+        orderBody.innerHTML="<tr><td colspan='11' style='text-align:center;'>No matching orders</td></tr>";  
+        return;  
+      }  
+  
+      list.forEach((o,i)=>{  
+        const sClass=o.status||"Pending";  
+        orderBody.innerHTML+=`  
+          <tr>  
+            <td>${i+1}</td>  
+            <td>  
+              <span style="color:#004aad;font-weight:500;">${o.reference||o.id}</span>  
+              <button class="btn copy" onclick="copyText('${o.reference||o.id}')">📋</button>  
+            </td>  
+            <td>${o.email||"—"}</td>  
+            <td>${o.platform||"—"}</td>  
+            <td>${o.service||"—"}</td>  
+            <td><a href="${o.link||'#'}" target="_blank" style="color:#0055aa;text-decoration:underline;">${o.link ? 'Open Link' : '—'}</a></td>  
+            <td>${o.quantity||0}</td>  
+            <td>$${o.totalUSD||"0.00"}</td>  
+            <td><span class="status ${sClass}">${o.status||"Pending"}</span></td>  
+            <td>${o.date||"—"}</td>  
+            <td>  
+              <button class="btn complete" onclick="updateStatus('${o.id}','Completed')">✅</button>  
+              <button class="btn pending" onclick="updateStatus('${o.id}','Pending')">🕒</button>  
+              <button class="btn cancel" onclick="updateStatus('${o.id}','Cancelled')">❌</button>  
+              <button class="btn delete" onclick="deleteOrder('${o.id}')">🗑️</button>  
+            </td>  
+          </tr>`;  
+      });  
+    }  
+  
+    function updateStatus(orderId,newStatus){  
+      if(confirm(`Change order status to "${newStatus}"?`)){  
+        db.ref("adminOrders/"+orderId).once("value").then(snap=>{  
+          if(!snap.exists())return alert("Order not found.");  
+          const order=snap.val();  
+          db.ref("adminOrders/"+orderId+"/status").set(newStatus);  
+          if(order.uid){  
+            db.ref(`orders/${order.uid}`).once("value",userSnap=>{  
+              userSnap.forEach(orderChild=>{  
+                if(orderChild.val().reference===order.reference){  
+                  db.ref(`orders/${order.uid}/${orderChild.key}/status`).set(newStatus);  
+                }  
+              });  
+            });  
+          }  
+          alert(`✅ Status updated to ${newStatus}`);  
+        }).catch(err=>alert("Error: "+err.message));  
+      }  
+    }  
+  
+    function deleteOrder(orderId){  
+      if(confirm("🗑️ Are you sure you want to delete this order?")){  
+        db.ref("adminOrders/"+orderId).once("value").then(snap=>{  
+          if(!snap.exists())return alert("Order not found.");  
+          const order=snap.val();  
+          db.ref("adminOrders/"+orderId).remove();  
+          if(order.uid){  
+            db.ref(`orders/${order.uid}`).once("value",userSnap=>{  
+              userSnap.forEach(orderChild=>{  
+                if(orderChild.val().reference===order.reference){  
+                  db.ref(`orders/${order.uid}/${orderChild.key}`).remove();  
+                }  
+              });  
+            });  
+          }  
+          alert("✅ Order deleted successfully");  
+        }).catch(err=>alert("❌ Error deleting order: "+err.message));  
+      }  
+    }  
+  
+    function copyText(txt){  
+      navigator.clipboard.writeText(txt).then(()=>alert(`✅ Copied: ${txt}`)).catch(()=>alert("❌ Failed to copy"));  
+    }  
+  
+    searchInput.addEventListener("input",filterOrders);  
+    filterStatus.addEventListener("change",filterOrders);  
+  
+    function filterOrders(){  
+      const q=searchInput.value.toLowerCase();  
+      const statusFilter=filterStatus.value;  
+      const filtered=orders.filter(o=>{  
+        const matchQuery=(  
+          (o.email||"").toLowerCase().includes(q) ||  
+          (o.platform||"").toLowerCase().includes(q) ||  
+          (o.reference||"").toLowerCase().includes(q)  
+        );  
+        const matchStatus=(statusFilter==="All" || o.status===statusFilter);  
+        return matchQuery && matchStatus;  
+      });  
+      renderOrders(filtered);  
+    }  
+  
+    function exportCSV(){  
+      if(orders.length===0){alert("No orders to export.");return;}  
+      let csv="Order ID,Email,Platform,Service,Link,Qty,Total (USD),Status,Date\n";  
+      orders.forEach(o=>{  
+        csv+=`${o.reference||o.id},${o.email||""},${o.platform||""},${o.service||""},${o.link||""},${o.quantity||0},${o.totalUSD||0},${o.status||""},${o.date||""}\n`;  
+      });  
+      const blob=new Blob([csv],{type:"text/csv"});  
+      const url=URL.createObjectURL(blob);  
+      const a=document.createElement("a");  
+      a.href=url;a.download="kwabenamedia_orders.csv";a.click();  
+    }  
+  
+    function logout(){auth.signOut();localStorage.clear();window.location.href="login.html";}  
+    function updateDateTime(){document.getElementById("datetime").textContent=new Date().toLocaleString();}  
+    setInterval(updateDateTime,1000);updateDateTime();  
+  </script>  
+</body>  
 </html>
