@@ -1,288 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kwabenamedia — Place Order</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: "Montserrat", sans-serif;
-    }
-
     body {
-      background-color: #f9f9f9;
+      font-family: 'Montserrat', sans-serif;
+      background: #f3f5f4;
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
     }
-
     .container {
-      background: white;
-      width: 95%;
-      max-width: 550px;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      background: #fff;
+      padding: 25px;
+      margin: 40px auto;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
-
-    h2 {
-      text-align: center;
-      color: #0c8d25;
-      margin-bottom: 20px;
+    label { font-weight: 600; display: block; margin-top: 15px; }
+    select, input {
+      width: 100%; padding: 10px; margin-top: 5px;
+      border: 1px solid #ccc; border-radius: 8px; font-size: 14px;
     }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin: 10px 0 5px;
-    }
-
-    select,
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      outline: none;
-      transition: 0.2s;
-    }
-
-    select:focus,
-    input:focus {
-      border-color: #0c8d25;
-      box-shadow: 0 0 5px rgba(12, 141, 37, 0.4);
-    }
-
-    .price-display {
-      text-align: center;
-      background: #0c8d25;
-      color: white;
-      padding: 10px;
-      border-radius: 10px;
-      font-weight: bold;
-      margin: 15px 0;
-    }
-
     button {
-      width: 100%;
-      background: #0c8d25;
-      color: white;
-      padding: 12px;
-      font-weight: 600;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
+      width: 100%; margin-top: 20px; padding: 12px;
+      background: #00994d; color: white; font-weight: 600;
+      border: none; border-radius: 8px; cursor: pointer;
     }
-
-    button:hover {
-      background: #08701d;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 13px;
-      color: gray;
-      margin-top: 10px;
-    }
+    button:hover { background: #007a3d; }
+    .price-box { margin-top: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+    .balance { font-weight: 600; color: #00994d; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Place Your Order</h2>
+    <h2>📋 Place Your Order</h2>
 
-    <label for="platform">Select Platform:</label>
+    <label>Platform</label>
     <select id="platform">
       <option value="">-- Select Platform --</option>
     </select>
 
-    <label for="service">Select Service:</label>
+    <label>Service</label>
     <select id="service">
       <option value="">-- Select Service --</option>
     </select>
 
-    <label for="quantity">Quantity (per 1000):</label>
-    <input type="number" id="quantity" placeholder="Enter quantity" />
+    <label>Quantity (Per 1000)</label>
+    <input type="number" id="quantity" value="200" min="200">
 
-    <div class="price-display">
-      Total Price (USD): $<span id="priceUSD">0</span>
+    <div class="price-box">
+      <p><strong>Price in USD:</strong> $<span id="priceUSD">0</span></p>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+        <p class="balance">Balance: $<span id="balanceValue">0.00</span></p>
+        <button id="refreshBalance" style="width:auto;">🔄 Refresh</button>
+      </div>
     </div>
 
-    <label for="username">Your Username / Link:</label>
-    <input type="text" id="username" placeholder="Enter your username or link" />
+    <label>Username / Link</label>
+    <input type="text" id="username" placeholder="Enter username or post link" required>
 
-    <label for="email">Your Email:</label>
-    <input type="email" id="email" placeholder="Enter your email" />
+    <label>Email</label>
+    <input type="email" id="email" placeholder="you@example.com" required>
 
-    <label for="phone">Phone Number:</label>
-    <input type="text" id="phone" placeholder="Enter phone number" />
+    <label>Phone</label>
+    <input type="text" id="phone" placeholder="e.g. +233xxxxxxxxx" required>
 
     <button id="placeBtn">Place Order</button>
-
-    <div class="footer">© 2025 Kwabenamedia</div>
   </div>
 
-  <!-- FIREBASE SCRIPT -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+    // Firebase Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, push, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // ✅ FIREBASE CONFIG
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyCGoDeUIKI_aWPV-Ys6Swlw9YQNcVhn5dY",
       authDomain: "kwabenamedia.firebaseapp.com",
       databaseURL: "https://kwabenamedia-default-rtdb.firebaseio.com",
       projectId: "kwabenamedia",
-      storageBucket: "kwabenamedia.appspot.com",
+      storageBucket: "kwabenamedia.firebasestorage.app",
       messagingSenderId: "508812066118",
-      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947"
+      appId: "1:508812066118:web:5bf0b2f7f7844d05b3b947",
+      measurementId: "G-FWT4S09Z9L"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    // ✅ SERVICE DATA
-    const services = {
-      "TikTok": {
+    // --- SERVICE DATA ---
+    const servicesData = {
+      TikTok: {
         "Followers (Refill 20 days)": { id: 18236, price: 3.7 },
-        "Followers Non Drop": { id: 10135, price: 5.7 },
+        "Followers (Non Drop)": { id: 10135, price: 5.7 },
         "Likes (Refill 20 days)": { id: 13088, price: 0.9 },
-        "Likes Non Drop | Super Instant": { id: 4949, price: 2 },
+        "Likes (Non Drop | Super Instant)": { id: 4949, price: 2 },
         "Views": { id: 17776, price: 0.9 },
-        "Views Super Instant": { id: 11183, price: 1.1 },
+        "Views (Super Instant)": { id: 11183, price: 1.1 },
         "Shares": { id: 11105, price: 1 }
       },
-      "Instagram": {
-        "Followers Real Accounts": { id: 27270, price: 7 },
-        "Likes Non Drop": { id: 27295, price: 1 },
-        "Views Non Drop": { id: 11184, price: 1.5 }
+      Instagram: {
+        "Followers (Real Accounts)": { id: 27270, price: 7 },
+        "Likes (Non Drop)": { id: 27295, price: 1 },
+        "Views (Non Drop)": { id: 11184, price: 1.5 }
       },
-      "YouTube": {
-        "Views Non Drop": { id: 24978, price: 4.8 },
-        "Likes Lifetime Guaranteed": { id: 1865, price: 2 },
-        "Subscribers Lifetime Guaranteed": { id: 18274, price: 65 }
+      YouTube: {
+        "Views (Non Drop)": { id: 24978, price: 4.8 },
+        "Likes (Lifetime Guaranteed)": { id: 1865, price: 2 },
+        "Subscribers (Lifetime Guaranteed)": { id: 18274, price: 65 }
       },
-      "Telegram": {
-        "Members Non Drop": { id: 15521, price: 4 },
+      Telegram: {
+        "Members (Non Drop)": { id: 15521, price: 4 },
         "Reactions": { id: 19003, price: 2 },
         "Views": { id: 15982, price: 3 }
       },
-      "Facebook": {
-        "Followers Lifetime Guaranteed": { id: 22328, price: 4 },
-        "Likes Instant | Non Drop | Lifetime Guaranteed": { id: 10372, price: 8 },
+      Facebook: {
+        "Followers (Lifetime Guaranteed)": { id: 22328, price: 4 },
+        "Likes (Instant | Non Drop | Lifetime Guaranteed)": { id: 10372, price: 8 },
         "Likes": { id: 10036, price: 3 },
-        "Views Monetizable": { id: 16611, price: 2 }
+        "Views (Monetizable)": { id: 16611, price: 2 }
       },
-      "WhatsApp": {
+      WhatsApp: {
         "Channel Members": { id: 18706, price: 13 }
       },
-      "LinkedIn": {
+      LinkedIn: {
         "AI Growth": { id: 20944, price: 100 }
       },
-      "Twitter": {
-        "Followers Non Drop": { id: 16269, price: 20 },
+      Twitter: {
+        "Followers (Non Drop)": { id: 16269, price: 20 },
         "Views": { id: 3775, price: 1 },
         "Likes": { id: 10864, price: 1.2 }
       }
     };
 
-    // Populate platform dropdown
+    // DOM Elements
     const platformSelect = document.getElementById("platform");
-    Object.keys(services).forEach(p => {
+    const serviceSelect = document.getElementById("service");
+    const quantityInput = document.getElementById("quantity");
+    const priceUSD = document.getElementById("priceUSD");
+    const balanceValue = document.getElementById("balanceValue");
+    const refreshBalance = document.getElementById("refreshBalance");
+    const placeBtn = document.getElementById("placeBtn");
+
+    // Populate Platforms
+    Object.keys(servicesData).forEach(platform => {
       const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
+      opt.value = platform;
+      opt.textContent = platform;
       platformSelect.appendChild(opt);
     });
 
-    // Populate service dropdown
-    const serviceSelect = document.getElementById("service");
+    // Populate Services
     platformSelect.addEventListener("change", () => {
       serviceSelect.innerHTML = '<option value="">-- Select Service --</option>';
-      const selected = platformSelect.value;
-      if (selected && services[selected]) {
-        Object.keys(services[selected]).forEach(s => {
+      const services = servicesData[platformSelect.value];
+      if (services) {
+        Object.keys(services).forEach(service => {
           const opt = document.createElement("option");
-          opt.value = s;
-          opt.textContent = s;
+          opt.value = service;
+          opt.textContent = `${service} - $${services[service].price}`;
           serviceSelect.appendChild(opt);
         });
       }
     });
 
-    // Price calculation
-    const quantityInput = document.getElementById("quantity");
-    const priceUSDSpan = document.getElementById("priceUSD");
+    // Calculate price
     serviceSelect.addEventListener("change", updatePrice);
     quantityInput.addEventListener("input", updatePrice);
 
     function updatePrice() {
       const platform = platformSelect.value;
       const service = serviceSelect.value;
-      const qty = parseFloat(quantityInput.value) || 0;
-      if (platform && service && services[platform][service]) {
-        const base = services[platform][service].price;
-        const price = (qty / 1000) * base;
-        priceUSDSpan.textContent = price.toFixed(2);
+      const qty = Number(quantityInput.value);
+      if (!platform || !service || !qty) return;
+      const serviceData = servicesData[platform][service];
+      const total = (qty / 1000) * serviceData.price;
+      priceUSD.textContent = total.toFixed(2);
+    }
+
+    let currentUID = null;
+    let currentBalance = 0;
+
+    // Get logged-in user and fetch balance
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUID = user.uid;
+        fetchBalance();
       } else {
-        priceUSDSpan.textContent = "0";
+        alert("You must be logged in to place an order.");
+        window.location.href = "login.html";
+      }
+    });
+
+    // Fetch Balance
+    async function fetchBalance() {
+      const snapshot = await get(ref(db, `users/${currentUID}/balance`));
+      if (snapshot.exists()) {
+        currentBalance = snapshot.val();
+        balanceValue.textContent = currentBalance.toFixed(2);
+      } else {
+        currentBalance = 0;
+        balanceValue.textContent = "0.00";
       }
     }
 
-    // Order submission
-    document.getElementById("placeBtn").addEventListener("click", async () => {
+    refreshBalance.addEventListener("click", fetchBalance);
+
+    // Handle order placement
+    placeBtn.addEventListener("click", async () => {
       const platform = platformSelect.value;
       const service = serviceSelect.value;
-      const qty = quantityInput.value;
-      const price = priceUSDSpan.textContent;
+      const qty = Number(quantityInput.value);
       const username = document.getElementById("username").value.trim();
       const email = document.getElementById("email").value.trim();
       const phone = document.getElementById("phone").value.trim();
 
       if (!platform || !service || !qty || !username || !email || !phone) {
-        alert("Please fill all fields correctly.");
+        alert("Please fill in all required fields.");
         return;
       }
 
-      const reference = "ORD" + Date.now().toString().slice(-6);
+      const serviceData = servicesData[platform][service];
+      const totalCost = (qty / 1000) * serviceData.price;
+
+      if (currentBalance < totalCost) {
+        alert("Insufficient balance. Please add funds.");
+        return;
+      }
 
       const orderData = {
-        reference,
-        platform,
-        service,
-        quantity: qty,
-        totalUSD: price,
-        username,
-        email,
-        phone,
-        date: new Date().toLocaleString(),
-        status: "Pending",
-        uid: "guest"
+        platform, service, qty, username, email, phone,
+        totalCost, date: new Date().toLocaleString(), status: "Pending"
       };
 
       try {
-        const adminRef = ref(db, "adminOrders");
-        await push(adminRef, orderData);
+        // Save to user orders
+        const userOrderRef = ref(db, `orders/${currentUID}`);
+        push(userOrderRef, orderData);
 
-        const userRef = ref(db, "orders/guest");
-        await push(userRef, orderData);
+        // Save to adminOrders
+        const adminOrderRef = ref(db, "adminOrders");
+        push(adminOrderRef, { ...orderData, user: currentUID });
+
+        // Deduct from balance
+        const newBalance = currentBalance - totalCost;
+        await update(ref(db, `users/${currentUID}`), { balance: newBalance });
+        currentBalance = newBalance;
+        balanceValue.textContent = currentBalance.toFixed(2);
 
         alert("✅ Order placed successfully!");
         window.location.href = "order-history.html";
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error(error);
         alert("❌ Failed to place order. Try again.");
       }
     });
   </script>
 </body>
-</html>, 
+</html>
