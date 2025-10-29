@@ -74,6 +74,7 @@
       <thead>
         <tr>
           <th>#</th>
+          <th>User Email</th>
           <th>Platform</th>
           <th>Service</th>
           <th>Quantity</th>
@@ -85,7 +86,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="9" style="text-align:center;">Loading orders...</td></tr>
+        <tr><td colspan="10" style="text-align:center;">Loading orders...</td></tr>
       </tbody>
     </table>
     <button id="loadMoreBtn" class="load-more" style="display:none;">⬇️ Load More</button>
@@ -117,38 +118,66 @@
     const loadMoreBtn = document.getElementById("loadMoreBtn");
     let allOrders = [];
     let displayedCount = 0;
-    const PAGE_SIZE = 10;
+    const PAGE_SIZE = 15;
 
     // ✅ Auth State
     auth.onAuthStateChanged(user => {
       if (user) {
-        loadOrders(user.uid);
+        if (user.email === "admin@google.com" || user.email === "admin@gmail.com") {
+          loadAllOrdersForAdmin();
+        } else {
+          loadUserOrders(user.uid);
+        }
       } else {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Please log in to view your orders.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Please log in to view your orders.</td></tr>`;
       }
     });
 
-    // ✅ Load Orders
-    function loadOrders(uid) {
+    // ✅ Admin loads ALL users' orders
+    function loadAllOrdersForAdmin() {
+      const ordersRef = db.ref("orders");
+      ordersRef.on("value", snapshot => {
+        tbody.innerHTML = "";
+        allOrders = [];
+
+        if (!snapshot.exists()) {
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
+          return;
+        }
+
+        snapshot.forEach(userSnap => {
+          const uid = userSnap.key;
+          userSnap.forEach(orderSnap => {
+            allOrders.push({ id: orderSnap.key, uid, ...orderSnap.val() });
+          });
+        });
+
+        allOrders.reverse();
+        displayedCount = 0;
+        displayNextBatch();
+      });
+    }
+
+    // ✅ Normal user loads their own
+    function loadUserOrders(uid) {
       const ordersRef = db.ref(`orders/${uid}`);
       ordersRef.on("value", snapshot => {
         tbody.innerHTML = "";
         allOrders = [];
 
         if (!snapshot.exists()) {
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">No orders found.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
           return;
         }
 
-        snapshot.forEach(child => allOrders.push({ id: child.key, ...child.val() }));
-        allOrders.reverse(); // newest first
-
+        snapshot.forEach(child => allOrders.push({ id: child.key, uid, ...child.val() }));
+        allOrders.reverse();
         displayedCount = 0;
         displayNextBatch();
       });
     }
 
-    // ✅ Display next batch of 10
+    // ✅ Display paginated orders
     function displayNextBatch() {
       const slice = allOrders.slice(displayedCount, displayedCount + PAGE_SIZE);
       if (displayedCount === 0) tbody.innerHTML = "";
@@ -167,14 +196,15 @@
         tbody.innerHTML += `
           <tr>
             <td>${count}</td>
+            <td>${order.email || "User"}</td>
             <td>${order.platform || "-"}</td>
             <td>${order.service || "-"}</td>
             <td>${order.qty || 0}</td>
-            <td>$${order.totalCost || "0.00"}</td>
+            <td>$${parseFloat(order.totalCost || 0).toFixed(2)}</td>
             <td>${order.username || "-"}</td>
             <td><span style="color:${color};font-weight:600;">${order.status || "Pending"}</span></td>
             <td>${order.date || "-"}</td>
-            <td><button class="delete-btn" onclick="deleteOrder('${auth.currentUser.uid}','${order.id}','${order.reference || ''}')">🗑 Delete</button></td>
+            <td><button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑 Delete</button></td>
           </tr>`;
       });
 
@@ -182,10 +212,9 @@
       loadMoreBtn.style.display = displayedCount < allOrders.length ? "block" : "none";
     }
 
-    // ✅ Delete Order
+    // ✅ Delete order (also from adminOrders)
     async function deleteOrder(uid, orderId, reference) {
       if (!confirm("Are you sure you want to delete this order?")) return;
-
       try {
         await db.ref(`orders/${uid}/${orderId}`).remove();
 
@@ -206,7 +235,6 @@
       }
     }
 
-    // ✅ Load more button
     loadMoreBtn.addEventListener("click", displayNextBatch);
   </script>
 </body>
