@@ -128,38 +128,42 @@
     const searchInput=document.getElementById("searchInput");  
     const filterStatus=document.getElementById("filterStatus");  
     let orders=[];  
-  
-    db.ref("adminOrders").on("value",snap=>{  
-      orders=[];  
-      orderBody.innerHTML="";  
-      if(!snap.exists()){  
-        orderBody.innerHTML="<tr><td colspan='11' style='text-align:center;'>No orders found.</td></tr>";  
-        return;  
-      }  
-  
-      snap.forEach(ch=>{  
-        const o=ch.val();  
-        orders.push({...o, id:ch.key});  
-      });  
-      renderOrders(orders);  
-    });  
-  
+
+    // ✅ FIXED LISTENER: Handles Firebase permission + real data stream
+    function loadOrders(){
+      const ref = db.ref("adminOrders");
+      ref.off(); // Prevent multiple listeners
+      ref.on("value",(snap)=>{
+        orderBody.innerHTML = "";
+        orders = [];
+        if(!snap.exists()){
+          orderBody.innerHTML = "<tr><td colspan='11' style='text-align:center;'>No orders found.</td></tr>";
+          return;
+        }
+        snap.forEach(child=>{
+          const val = child.val();
+          orders.push({...val,id:child.key});
+        });
+        renderOrders(orders);
+      }, (error)=>{
+        orderBody.innerHTML = `<tr><td colspan='11' style='color:red;text-align:center;'>⚠ Error loading orders: ${error.message}</td></tr>`;
+      });
+    }
+    loadOrders();
+
     function renderOrders(list){  
       orderBody.innerHTML="";  
       if(list.length===0){  
         orderBody.innerHTML="<tr><td colspan='11' style='text-align:center;'>No matching orders</td></tr>";  
         return;  
       }  
-  
       list.forEach((o,i)=>{  
         const sClass=o.status||"Pending";  
         orderBody.innerHTML+=`  
           <tr>  
             <td>${i+1}</td>  
-            <td>  
-              <span style="color:#004aad;font-weight:500;">${o.reference||o.id}</span>  
-              <button class="btn copy" onclick="copyText('${o.reference||o.id}')">📋</button>  
-            </td>  
+            <td><span style="color:#004aad;font-weight:500;">${o.reference||o.id}</span>  
+              <button class="btn copy" onclick="copyText('${o.reference||o.id}')">📋</button></td>  
             <td>${o.email||"—"}</td>  
             <td>${o.platform||"—"}</td>  
             <td>${o.service||"—"}</td>  
@@ -177,7 +181,7 @@
           </tr>`;  
       });  
     }  
-  
+
     function updateStatus(orderId,newStatus){  
       if(confirm(`Change order status to "${newStatus}"?`)){  
         db.ref("adminOrders/"+orderId).once("value").then(snap=>{  
@@ -197,7 +201,7 @@
         }).catch(err=>alert("Error: "+err.message));  
       }  
     }  
-  
+
     function deleteOrder(orderId){  
       if(confirm("🗑️ Are you sure you want to delete this order?")){  
         db.ref("adminOrders/"+orderId).once("value").then(snap=>{  
@@ -217,14 +221,14 @@
         }).catch(err=>alert("❌ Error deleting order: "+err.message));  
       }  
     }  
-  
+
     function copyText(txt){  
       navigator.clipboard.writeText(txt).then(()=>alert(`✅ Copied: ${txt}`)).catch(()=>alert("❌ Failed to copy"));  
     }  
-  
+
     searchInput.addEventListener("input",filterOrders);  
     filterStatus.addEventListener("change",filterOrders);  
-  
+
     function filterOrders(){  
       const q=searchInput.value.toLowerCase();  
       const statusFilter=filterStatus.value;  
@@ -239,7 +243,7 @@
       });  
       renderOrders(filtered);  
     }  
-  
+
     function exportCSV(){  
       if(orders.length===0){alert("No orders to export.");return;}  
       let csv="Order ID,Email,Platform,Service,Link,Qty,Total (USD),Status,Date\n";  
@@ -251,7 +255,7 @@
       const a=document.createElement("a");  
       a.href=url;a.download="kwabenamedia_orders.csv";a.click();  
     }  
-  
+
     function logout(){auth.signOut();localStorage.clear();window.location.href="login.html";}  
     function updateDateTime(){document.getElementById("datetime").textContent=new Date().toLocaleString();}  
     setInterval(updateDateTime,1000);updateDateTime();  
