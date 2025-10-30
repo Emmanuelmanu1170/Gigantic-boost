@@ -25,12 +25,8 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     h1 { text-align: center; color: #008037; margin-bottom: 25px; }
-    table {
-      width: 100%; border-collapse: collapse; margin-top: 20px;
-    }
-    th, td {
-      padding: 12px 10px; border: 1px solid #ccc; text-align: left;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px 10px; border: 1px solid #ccc; text-align: left; }
     th { background-color: #008037; color: #fff; }
     tr:nth-child(even) { background-color: #f9f9f9; }
     .btn-back {
@@ -39,27 +35,21 @@
       color: #fff; font-weight: 600; transition: 0.3s;
     }
     .btn-back:hover { background: #0056b3; transform: translateY(-2px) scale(1.05); }
-    .delete-btn {
-      background: #dc3545; color: white; border: none; border-radius: 6px;
-      padding: 6px 12px; cursor: pointer; font-weight: 600;
+    .delete-btn, .status-btn {
+      border: none; border-radius: 6px; padding: 6px 12px;
+      cursor: pointer; font-weight: 600; margin-right: 5px;
     }
+    .delete-btn { background: #dc3545; color: #fff; }
     .delete-btn:hover { background: #b32b36; }
+    .status-btn { background: #008037; color: #fff; }
+    .status-btn:hover { background: #00682d; }
     .load-more {
-      display: block;
-      margin: 20px auto 0;
-      padding: 10px 18px;
-      background: #008037;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
+      display: block; margin: 20px auto 0; padding: 10px 18px;
+      background: #008037; color: #fff; border: none;
+      border-radius: 8px; font-weight: 600; cursor: pointer;
       transition: 0.3s;
     }
-    .load-more:hover {
-      background: #00682d;
-      transform: scale(1.05);
-    }
+    .load-more:hover { background: #00682d; transform: scale(1.05); }
     @media (max-width: 768px) {
       th, td { font-size: 14px; padding: 10px; }
       table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -118,82 +108,70 @@
     const loadMoreBtn = document.getElementById("loadMoreBtn");
     let allOrders = [];
     let displayedCount = 0;
-    const PAGE_SIZE = 15;
+    const PAGE_SIZE = 20;
+    let currentUser = null;
 
-    // ✅ Auth Check
+    // ✅ Listen for user login
     auth.onAuthStateChanged(user => {
       if (user) {
+        currentUser = user;
         if (user.email === "admin@google.com" || user.email === "admin@gmail.com") {
-          loadAllOrdersForAdmin();
+          loadAllOrdersLive();
         } else {
-          loadUserOrders(user.uid);
+          loadUserOrdersLive(user.uid);
         }
       } else {
         tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Please log in to view your orders.</td></tr>`;
       }
     });
 
-    // ✅ Admin: Load ALL users' orders
-    function loadAllOrdersForAdmin() {
-      const ordersRef = db.ref("orders");
-      ordersRef.once("value").then(snapshot => {
-        allOrders = [];
+    // ✅ Admin: Live load all orders (users + adminOrders)
+    function loadAllOrdersLive() {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Loading all orders...</td></tr>`;
+      const allRefs = [db.ref("orders"), db.ref("adminOrders")];
+      allOrders = [];
 
-        snapshot.forEach(userSnap => {
-          userSnap.forEach(orderSnap => {
-            const orderData = orderSnap.val();
-            allOrders.push({
-              id: orderSnap.key,
-              uid: userSnap.key,
-              ...orderData
-            });
+      allRefs.forEach(ref => {
+        ref.on("value", snapshot => {
+          allOrders = [];
+          snapshot.forEach(parent => {
+            if (ref.key === "orders") {
+              parent.forEach(orderSnap => {
+                allOrders.push({ id: orderSnap.key, uid: parent.key, ...orderSnap.val() });
+              });
+            } else {
+              allOrders.push({ id: parent.key, uid: "admin", ...parent.val() });
+            }
           });
+          renderOrders();
         });
-
-        if (allOrders.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
-          return;
-        }
-
-        allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        displayedCount = 0;
-        displayNextBatch();
       });
     }
 
-    // ✅ Normal user orders
-    function loadUserOrders(uid) {
-      const ordersRef = db.ref(`orders/${uid}`);
-      ordersRef.once("value").then(snapshot => {
+    // ✅ User: Live load personal orders
+    function loadUserOrdersLive(uid) {
+      const ref = db.ref(`orders/${uid}`);
+      ref.on("value", snapshot => {
         allOrders = [];
-
-        snapshot.forEach(child => {
-          const data = child.val();
-          allOrders.push({
-            id: child.key,
-            uid,
-            ...data
-          });
+        snapshot.forEach(orderSnap => {
+          allOrders.push({ id: orderSnap.key, uid, ...orderSnap.val() });
         });
-
-        if (allOrders.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
-          return;
-        }
-
-        allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-        displayedCount = 0;
-        displayNextBatch();
+        renderOrders();
       });
     }
 
-    // ✅ Display in batches
-    function displayNextBatch() {
-      const slice = allOrders.slice(displayedCount, displayedCount + PAGE_SIZE);
-      if (displayedCount === 0) tbody.innerHTML = "";
-      let count = displayedCount;
+    // ✅ Render orders
+    function renderOrders() {
+      if (allOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>`;
+        return;
+      }
 
-      slice.forEach(order => {
+      allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+      tbody.innerHTML = "";
+      let count = 0;
+
+      allOrders.forEach(order => {
         count++;
         const colorMap = {
           Completed: "green",
@@ -204,7 +182,18 @@
         const color = colorMap[order.status] || "#555";
         const total = parseFloat(order.totalCost || 0);
 
-        const row = `
+        let actionBtns = "";
+        if (currentUser.email === "admin@google.com" || currentUser.email === "admin@gmail.com") {
+          actionBtns = `
+            <button class="status-btn" onclick="updateStatus('${order.uid}','${order.id}','Completed')">✅ Done</button>
+            <button class="status-btn" onclick="updateStatus('${order.uid}','${order.id}','Processing')">⚙️ Processing</button>
+            <button class="status-btn" onclick="updateStatus('${order.uid}','${order.id}','Cancelled')">❌ Cancel</button>
+            <button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑</button>`;
+        } else {
+          actionBtns = `<button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑</button>`;
+        }
+
+        tbody.innerHTML += `
           <tr>
             <td>${count}</td>
             <td>${order.email || "User"}</td>
@@ -215,45 +204,37 @@
             <td>${order.username || "-"}</td>
             <td><span style="color:${color};font-weight:600;">${order.status || "Pending"}</span></td>
             <td>${order.date || "-"}</td>
-            <td>
-              <button class="delete-btn" onclick="deleteOrder('${order.uid}','${order.id}','${order.reference || ''}')">🗑 Delete</button>
-            </td>
+            <td>${actionBtns}</td>
           </tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
       });
-
-      displayedCount += slice.length;
-      loadMoreBtn.style.display = displayedCount < allOrders.length ? "block" : "none";
     }
 
-    // ✅ Delete Order
+    // ✅ Update Order Status
+    async function updateStatus(uid, orderId, status) {
+      try {
+        await db.ref(`orders/${uid}/${orderId}/status`).set(status);
+        await db.ref(`adminOrders/${orderId}/status`).set(status);
+        alert(`✅ Status updated to ${status}`);
+      } catch (err) {
+        alert("❌ Error updating status: " + err.message);
+      }
+    }
+
+    // ✅ Delete Order (Admin or User)
     async function deleteOrder(uid, orderId, reference) {
       if (!confirm("Are you sure you want to delete this order?")) return;
-
       try {
         await db.ref(`orders/${uid}/${orderId}`).remove();
-
-        if (reference) {
-          const adminSnap = await db.ref("adminOrders").once("value");
-          adminSnap.forEach(child => {
-            const order = child.val();
-            if (order.reference === reference) {
-              db.ref("adminOrders/" + child.key).remove();
-            }
-          });
-        }
+        await db.ref(`adminOrders/${orderId}`).remove();
 
         const logDelete = firebase.functions().httpsCallable("logOrderDeletion");
         await logDelete({ uid, orderId, reference });
 
         alert("✅ Order deleted successfully!");
-        loadAllOrdersForAdmin(); // refresh after delete
       } catch (err) {
         alert("❌ Error deleting order: " + err.message);
       }
     }
-
-    loadMoreBtn.addEventListener("click", displayNextBatch);
   </script>
 </body>
 </html>
